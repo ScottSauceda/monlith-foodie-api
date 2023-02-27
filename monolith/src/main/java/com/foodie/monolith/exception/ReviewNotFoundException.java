@@ -1,6 +1,6 @@
 package com.foodie.monolith.exception;
 
-public class ReviewNotFoundException extends Exception {
+public class ReviewNotFoundException extends RuntimeException {
     private String message;
 
     public ReviewNotFoundException() {}

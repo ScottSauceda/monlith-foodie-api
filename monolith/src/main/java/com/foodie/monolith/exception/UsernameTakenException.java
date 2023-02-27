@@ -1,6 +1,6 @@
 package com.foodie.monolith.exception;
 
-public class UsernameTakenException extends Exception {
+public class UsernameTakenException extends RuntimeException {
     private String message;
 
     public UsernameTakenException() {}

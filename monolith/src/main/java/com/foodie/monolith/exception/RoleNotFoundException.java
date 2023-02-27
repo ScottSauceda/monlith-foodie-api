@@ -1,6 +1,6 @@
 package com.foodie.monolith.exception;
 
-public class RoleNotFoundException extends Exception {
+public class RoleNotFoundException extends RuntimeException {
     private String message;
 
     public RoleNotFoundException() {}

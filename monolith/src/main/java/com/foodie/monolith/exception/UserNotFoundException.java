@@ -1,6 +1,6 @@
 package com.foodie.monolith.exception;
 
-public class UserNotFoundException extends Exception {
+public class UserNotFoundException extends RuntimeException {
     private String message;
     public UserNotFoundException() {}
 
