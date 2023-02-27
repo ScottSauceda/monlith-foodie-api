@@ -1,15 +1,15 @@
 package com.foodie.monolith.controller;
 
-import com.foodie.monolith.service.RestaurantService;
+import com.foodie.monolith.service.UserProfileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/restaurant")
-public class RestaurantController {
+@RequestMapping("/profile")
+public class UserProfileController {
 
     @Autowired
-    RestaurantService restaurantService;
+    UserProfileService userProfileService;
 
 }
