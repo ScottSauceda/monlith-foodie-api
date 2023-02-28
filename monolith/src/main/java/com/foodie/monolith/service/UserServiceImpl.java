@@ -1,6 +1,8 @@
 package com.foodie.monolith.service;
 
+import com.foodie.monolith.exception.LocationNotFoundException;
 import com.foodie.monolith.exception.UserNotFoundException;
+import com.foodie.monolith.model.Location;
 import com.foodie.monolith.model.User;
 import com.foodie.monolith.repository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -9,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -27,6 +30,54 @@ public class UserServiceImpl implements UserService {
                 users.add(user);
             }
             return users;
+        }
+    }
+
+    @Transactional
+    public Optional<User> getUserById(Integer userId) throws UserNotFoundException {
+        Optional<User> user = null;
+        if(userRepository.findById(userId).isEmpty()){
+            throw new UserNotFoundException("Location with Id: " + userId + " does not exists. Please try again.");
+        } else {
+            user = userRepository.findById(userId);
+        }
+        return user;
+    }
+
+    @Transactional
+    public String createUser(User newUser) {
+        User savedUser = null;
+        savedUser = userRepository.saveAndFlush(newUser);
+
+        if(userRepository.findById(savedUser.getUserId()).isEmpty()){
+            return "Something went wrong. Please try again";
+        } else {
+            return "New User created with Id: " + savedUser.getUserId();
+        }
+    }
+
+    @Transactional
+    public String updateUser(Integer userId, User updateUser) throws UserNotFoundException {
+        User dbUser = userRepository.findById(userId).orElse(null);;
+
+        if(dbUser == null){
+            throw new UserNotFoundException("User with Id: " + userId + "does not exists. Please try again.");
+        } else {
+            dbUser.setPassword(updateUser.getPassword());
+
+            return "User has been updated successfully";
+        }
+    }
+
+    @Transactional
+    public String deleteUser(Integer userId) throws UserNotFoundException {
+        User dbUser = userRepository.findById(userId).orElse(null);
+
+        if(dbUser == null){
+            throw new UserNotFoundException("User with Id: " + userId + " does not exists. Please try again.");
+        } else {
+            userRepository.delete(dbUser);
+            return "User has been deleted successfully";
         }
     }
 

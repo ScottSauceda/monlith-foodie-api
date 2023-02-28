@@ -1,5 +1,9 @@
 package com.foodie.monolith.service;
 
-public interface UserProfileService {
+import com.foodie.monolith.model.UserProfile;
 
+import java.util.List;
+
+public interface UserProfileService {
+    public List<UserProfile> getUserProfiles();
 }
