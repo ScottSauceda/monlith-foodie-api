@@ -9,7 +9,9 @@ import java.util.Optional;
 public interface ReviewService {
     public List<Review> getReviews();
 
-    public Optional<Review> getReviewById(Integer userId);
+    public List<Review> getUserReviews(Integer userId);
+
+    public Optional<Review> getReviewById(Integer reviewId);
 
     public String createReview(Review newReview);
 

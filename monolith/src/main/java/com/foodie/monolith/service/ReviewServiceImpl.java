@@ -37,6 +37,22 @@ public class ReviewServiceImpl implements  ReviewService {
         }
     }
 
+    @Transactional
+    public List<Review> getUserReviews(Integer userId) throws UserNotFoundException, ReviewNotFoundException {
+        List<Review> reviews = new ArrayList<Review>();
+        if(reviewRepository.findAll().isEmpty()){
+            throw new ReviewNotFoundException("No Reviews to return");
+        } else if(reviewRepository.findAllByUserId(userId).isEmpty()) {
+            throw new UserNotFoundException("No Reviews for that user to return");
+        } else {
+            List<Review> dbReviews = reviewRepository.findAllByUserId(userId);
+            for(Review review: dbReviews){
+                reviews.add(review);
+            }
+            return reviews;
+        }
+    }
+
 
     @Transactional
     public Optional<Review> getReviewById(Integer reviewId) throws ReviewNotFoundException {

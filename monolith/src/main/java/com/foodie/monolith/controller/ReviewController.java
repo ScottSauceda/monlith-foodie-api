@@ -1,6 +1,7 @@
 package com.foodie.monolith.controller;
 
 import com.foodie.monolith.exception.ReviewNotFoundException;
+import com.foodie.monolith.exception.UserNotFoundException;
 import com.foodie.monolith.model.Review;
 import com.foodie.monolith.service.ReviewService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,17 @@ public class ReviewController {
         } catch(ReviewNotFoundException reviewNotFoundException){
             return new ResponseEntity(reviewNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
         }
+    }
+
+    @GetMapping(value = "/reviews/{userId}")
+    public ResponseEntity<List<Review>> getUserReviews(@PathVariable Integer userId) throws UserNotFoundException, ReviewNotFoundException {
+        try {
+            return ResponseEntity.status(HttpStatus.OK).body(reviewService.getUserReviews(userId));
+        } catch(UserNotFoundException userNotFoundException){
+            return new ResponseEntity(userNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch(ReviewNotFoundException reviewNotFoundException){
+        return new ResponseEntity(reviewNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
+    }
     }
 
     @GetMapping(value = "/{reviewId}")

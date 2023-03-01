@@ -29,4 +29,7 @@ public class Review {
 
     @Column(name = "review_text", length = 250)
     private String reviewText;
+
+    @Column(name = "users_id")
+    private Integer userId;
 }
