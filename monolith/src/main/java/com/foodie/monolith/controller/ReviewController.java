@@ -36,7 +36,7 @@ public class ReviewController {
             return new ResponseEntity(userNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
         } catch(ReviewNotFoundException reviewNotFoundException){
         return new ResponseEntity(reviewNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
-    }
+        }
     }
 
     @GetMapping(value = "/{reviewId}")

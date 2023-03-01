@@ -2,6 +2,7 @@ package com.foodie.monolith.service;
 
 import com.foodie.monolith.exception.LocationNotFoundException;
 import com.foodie.monolith.exception.RestaurantNotFoundException;
+import com.foodie.monolith.exception.UserNotFoundException;
 import com.foodie.monolith.model.Location;
 import com.foodie.monolith.model.Restaurant;
 import com.foodie.monolith.repository.RestaurantRepository;
@@ -26,6 +27,22 @@ public class RestaurantServiceImpl implements RestaurantService {
             throw new RestaurantNotFoundException("No Restaurants to return");
         } else {
             List<Restaurant> dbRestaurants = restaurantRepository.findAll();
+            for(Restaurant restaurant: dbRestaurants){
+                restaurants.add(restaurant);
+            }
+            return restaurants;
+        }
+    }
+
+    @Transactional
+    public List<Restaurant> getUserRestaurants(Integer userId) throws UserNotFoundException, RestaurantNotFoundException {
+        List<Restaurant> restaurants = new ArrayList<Restaurant>();
+        if(restaurantRepository.findAll().isEmpty()){
+            throw new RestaurantNotFoundException("No Restaurants to return");
+        } else if(restaurantRepository.findAllByOwnerId(userId).isEmpty()) {
+            throw new UserNotFoundException("No Restaurants to return for that user");
+        } else {
+            List<Restaurant> dbRestaurants = restaurantRepository.findAllByOwnerId(userId);
             for(Restaurant restaurant: dbRestaurants){
                 restaurants.add(restaurant);
             }

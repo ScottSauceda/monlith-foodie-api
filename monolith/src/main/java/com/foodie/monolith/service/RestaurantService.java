@@ -9,6 +9,7 @@ import java.util.Optional;
 public interface RestaurantService {
 
     public List<Restaurant> getRestaurants();
+    List<Restaurant> getUserRestaurants(Integer userId);
 
     public Optional<Restaurant> getRestaurantById(Integer restaurantId);
 
