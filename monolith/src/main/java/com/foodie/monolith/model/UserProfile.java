@@ -17,21 +17,16 @@ public class UserProfile {
     @Column(name = "users_id")
     private Integer usersId;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @MapsId
-    @JoinColumn(name = "users_id")
-    private User user;
-
-    @Column(name = "first_name", length = 45)
+    @Column(name = "first_name", length = 50)
     private String firstName;
 
-    @Column(name = "last_name", length = 45)
+    @Column(name = "last_name", length = 50)
     private String lastName;
 
-    @Column(name = "email", length = 45)
+    @Column(name = "email", length = 50)
     private String email;
 
-    @Column(name = "phone", length = 45)
+    @Column(name = "phone", length = 50)
     private String phone;
 
 }

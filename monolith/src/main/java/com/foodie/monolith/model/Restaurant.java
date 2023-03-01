@@ -20,21 +20,14 @@ public class Restaurant {
     @Column(name = "restaurant_id", nullable = false)
     private Integer restaurantId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "location_id")
-    private Location location;
+    @Column(name = "location_id")
+    private Integer locationId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "owner_id")
-    private User owner;
+    @Column(name = "owner_id")
+    private Integer ownerId;
     
     @Column(name = "name", length = 45)
     private String name;
 
-    @OneToMany
-    @JoinTable(name = "restaurant_reviews",
-        joinColumns = @JoinColumn(name = "reviews_id"),
-        inverseJoinColumns = @JoinColumn(name = "restaurants_id"))
-    private List<Review> reviews;
 
 }

@@ -6,11 +6,10 @@ import com.foodie.monolith.service.ReviewService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/review")
@@ -28,14 +27,40 @@ public class ReviewController {
         }
     }
 
-    // Get review by id
+    @GetMapping(value = "/{reviewId}")
+    public ResponseEntity<Optional<Review>> getReviewById(@PathVariable Integer reviewId) throws ReviewNotFoundException {
+        try {
+            return ResponseEntity.status(HttpStatus.OK).body(reviewService.getReviewById(reviewId));
+        } catch(ReviewNotFoundException reviewNotFoundException){
+            return new ResponseEntity(reviewNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
 
-    // Create review
+    @PostMapping(value = "/create")
+    public ResponseEntity<String> createReview(@RequestBody Review newReview) throws ReviewNotFoundException {
+        try {
+            return ResponseEntity.status(HttpStatus.OK).body(reviewService.createReview(newReview));
+        } catch(ReviewNotFoundException reviewNotFoundException){
+            return new ResponseEntity(reviewNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
 
-    // Edit review
+    @PutMapping(value = "/update/{reviewId}")
+    public ResponseEntity<String> updateReview(@PathVariable Integer reviewId, @RequestBody Review updateReview) throws ReviewNotFoundException {
+        try {
+            return ResponseEntity.status(HttpStatus.OK).body(reviewService.updateReview(reviewId, updateReview));
+        } catch(ReviewNotFoundException reviewNotFoundException){
+            return new ResponseEntity(reviewNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
 
-    // Delete review
-
-
+    @DeleteMapping(value = "/delete/{reviewId}")
+    public ResponseEntity<String> deleteReview(@PathVariable Integer reviewId) throws ReviewNotFoundException {
+        try {
+            return ResponseEntity.status(HttpStatus.OK).body(reviewService.deleteReview(reviewId));
+        } catch(ReviewNotFoundException reviewNotFoundException){
+            return new ResponseEntity(reviewNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
 
 }
