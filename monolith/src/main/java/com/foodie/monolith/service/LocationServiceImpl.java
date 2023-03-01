@@ -1,6 +1,7 @@
 package com.foodie.monolith.service;
 
 import com.foodie.monolith.exception.LocationNotFoundException;
+import com.foodie.monolith.exception.UserNotFoundException;
 import com.foodie.monolith.model.Location;
 import com.foodie.monolith.repository.LocationRepository;
 import jakarta.transaction.Transactional;
@@ -24,6 +25,22 @@ public class LocationServiceImpl implements LocationService {
             throw new LocationNotFoundException("No Locations to return");
         } else {
             List<Location> dbLocations = locationRepository.findAll();
+            for(Location location: dbLocations){
+                locations.add(location);
+            }
+            return locations;
+        }
+    }
+
+    @Transactional
+    public List<Location> getUserLocations(Integer userId) throws UserNotFoundException, LocationNotFoundException {
+        List<Location> locations = new ArrayList<Location>();
+        if(locationRepository.findAll().isEmpty()){
+            throw new LocationNotFoundException("No Locations to return");
+        } else if(locationRepository.findAllByUserId(userId).isEmpty()) {
+            throw new UserNotFoundException("No Locations for that user to return");
+        } else {
+            List<Location> dbLocations = locationRepository.findAllByUserId(userId);
             for(Location location: dbLocations){
                 locations.add(location);
             }

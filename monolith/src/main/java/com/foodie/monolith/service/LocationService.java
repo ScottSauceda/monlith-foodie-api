@@ -9,6 +9,8 @@ import java.util.Optional;
 public interface LocationService {
     public List<Location> getLocations();
 
+    public List<Location> getUserLocations(Integer userId);
+
     public Optional<Location> getLocationById(Integer locationId);
 
     public String createLocation(Location newLocation);

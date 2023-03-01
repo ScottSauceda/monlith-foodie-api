@@ -33,8 +33,8 @@ public class Location {
     @Column(name = "zip_code", length = 45)
     private Integer zipCode;
 
-    @Column(name = "users_id", length = 45)
-    private Integer users_id;
+    @Column(name = "users_id")
+    private Integer userId;
 
     public Boolean compareValues(Location otherLocation) {
         Boolean same = true;

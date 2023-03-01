@@ -1,6 +1,7 @@
 package com.foodie.monolith.controller;
 
 import com.foodie.monolith.exception.LocationNotFoundException;
+import com.foodie.monolith.exception.UserNotFoundException;
 import com.foodie.monolith.model.Location;
 import com.foodie.monolith.service.LocationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,17 @@ public class LocationController {
     public ResponseEntity<List<Location>>getLocations() throws LocationNotFoundException {
         try {
             return ResponseEntity.status(HttpStatus.OK).body(locationService.getLocations());
+        } catch(LocationNotFoundException locationNotFoundException){
+            return new ResponseEntity(locationNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @GetMapping(value = "/locations/{userId}")
+    public ResponseEntity<List<Location>>getUserLocations(@PathVariable Integer userId) throws UserNotFoundException, LocationNotFoundException {
+        try {
+            return ResponseEntity.status(HttpStatus.OK).body(locationService.getUserLocations(userId));
+        } catch(UserNotFoundException userNotFoundException){
+            return new ResponseEntity(userNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
         } catch(LocationNotFoundException locationNotFoundException){
             return new ResponseEntity(locationNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
         }
