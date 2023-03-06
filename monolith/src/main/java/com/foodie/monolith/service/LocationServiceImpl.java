@@ -73,7 +73,10 @@ public class LocationServiceImpl implements LocationService {
 
     @Transactional
     public String updateLocation(Integer locationId, Location updateLocation) throws LocationNotFoundException {
-        Location dbLocation = locationRepository.findById(locationId).orElse(null);;
+        Location dbLocation = locationRepository.findById(locationId).orElse(null);
+
+        System.out.println("location: ");
+        System.out.println(updateLocation);
 
         if(dbLocation == null){
             throw new LocationNotFoundException("Location with Id: " + locationId + "does not exists. Please try again.");

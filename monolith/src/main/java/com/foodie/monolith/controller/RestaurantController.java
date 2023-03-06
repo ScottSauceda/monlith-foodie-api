@@ -1,6 +1,7 @@
 package com.foodie.monolith.controller;
 
 
+import com.foodie.monolith.data.RestaurantInformation;
 import com.foodie.monolith.exception.LocationNotFoundException;
 import com.foodie.monolith.exception.RestaurantNotFoundException;
 import com.foodie.monolith.exception.ReviewNotFoundException;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
 
+@CrossOrigin(origins = {"http://localhost:4200", "http://localhost:3000"})
 @RestController
 @RequestMapping("/restaurant")
 public class RestaurantController {
@@ -25,7 +27,7 @@ public class RestaurantController {
     RestaurantService restaurantService;
 
     @GetMapping(value = "/restaurants")
-    public ResponseEntity<List<Restaurant>> getRestaurants() throws RestaurantNotFoundException {
+    public ResponseEntity<List<RestaurantInformation>> getRestaurants() throws RestaurantNotFoundException {
         try {
             return ResponseEntity.status(HttpStatus.OK).body(restaurantService.getRestaurants());
         } catch(RestaurantNotFoundException restaurantNotFoundException){
@@ -34,7 +36,7 @@ public class RestaurantController {
     }
 
     @GetMapping(value = "/restaurants/{userId}")
-    public ResponseEntity<List<Restaurant>> getUserRestaurants(@PathVariable Integer userId) throws UserNotFoundException, RestaurantNotFoundException {
+    public ResponseEntity<List<RestaurantInformation>> getUserRestaurants(@PathVariable Integer userId) throws UserNotFoundException, RestaurantNotFoundException {
         try {
             return ResponseEntity.status(HttpStatus.OK).body(restaurantService.getUserRestaurants(userId));
         } catch(UserNotFoundException userNotFoundException){
@@ -47,7 +49,7 @@ public class RestaurantController {
 
 
     @GetMapping(value = "/{restaurantId}")
-    public ResponseEntity<Optional<Restaurant>> getRestaurantById(@PathVariable Integer restaurantId) throws RestaurantNotFoundException {
+    public ResponseEntity<RestaurantInformation> getRestaurantById(@PathVariable Integer restaurantId) throws RestaurantNotFoundException {
         try {
             return ResponseEntity.status(HttpStatus.OK).body(restaurantService.getRestaurantById(restaurantId));
         } catch(RestaurantNotFoundException restaurantNotFoundException){

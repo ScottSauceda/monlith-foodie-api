@@ -20,14 +20,26 @@ public class Restaurant {
     @Column(name = "restaurant_id", nullable = false)
     private Integer restaurantId;
 
-    @Column(name = "location_id")
-    private Integer locationId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "location_id")
+    private Location location;
 
-    @Column(name = "owner_id")
-    private Integer ownerId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "owner_id")
+    private User owner;
     
     @Column(name = "name", length = 45)
     private String name;
+
+    @Column(name = "is_active")
+    private boolean isActive = true;
+
+    @OneToMany
+    @JoinTable(name = "restaurant_reviews",
+            joinColumns = @JoinColumn(name = "restaurants_id"),
+            inverseJoinColumns = @JoinColumn(name = "reviews_id")
+    )
+    private List<Review> reviews;
 
 
 }

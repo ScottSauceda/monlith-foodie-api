@@ -1,9 +1,12 @@
 package com.foodie.monolith.service;
 
+import com.foodie.monolith.data.UserInformation;
 import com.foodie.monolith.exception.LocationNotFoundException;
 import com.foodie.monolith.exception.UserNotFoundException;
 import com.foodie.monolith.model.Location;
 import com.foodie.monolith.model.User;
+import com.foodie.monolith.model.UserProfile;
+import com.foodie.monolith.repository.UserProfileRepository;
 import com.foodie.monolith.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +21,8 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     UserRepository userRepository;
+    @Autowired
+    private UserProfileRepository userProfileRepository;
 
     @Transactional
     public List<User> getUsers() throws UserNotFoundException {
@@ -34,14 +39,30 @@ public class UserServiceImpl implements UserService {
     }
 
     @Transactional
-    public Optional<User> getUserById(Integer userId) throws UserNotFoundException {
-        Optional<User> user = null;
+    public List<UserInformation> getAllUserInformation() throws Exception {
+        List<UserInformation> userInformation = new ArrayList<>();
+
+        if(userProfileRepository.findAll().isEmpty()){
+            throw new Exception("Something went wrong, please try again.");
+        } else {
+            for(UserProfile dbUser: userProfileRepository.findAll()){
+                userInformation.add(getUserInformation(dbUser.getUsersId()));
+            }
+        }
+
+        return userInformation;
+    }
+
+    @Transactional
+    public UserInformation getUserById(Integer userId) throws UserNotFoundException {
+        UserInformation userInformation = null;
         if(userRepository.findById(userId).isEmpty()){
             throw new UserNotFoundException("Location with Id: " + userId + " does not exists. Please try again.");
         } else {
-            user = userRepository.findById(userId);
+
+            userInformation = getUserInformation(userId);
         }
-        return user;
+        return userInformation;
     }
 
     @Transactional
@@ -79,6 +100,29 @@ public class UserServiceImpl implements UserService {
             userRepository.delete(dbUser);
             return "User has been deleted successfully";
         }
+    }
+
+    @Transactional
+    public UserInformation getUserInformation(Integer userId){
+        Optional<User> optionalUser = userRepository.findById(userId);
+        User user = optionalUser.get();
+
+        Optional<UserProfile> optionalUserProfile = userProfileRepository.findById(userId);
+        UserProfile userProfile = optionalUserProfile.get();
+
+        UserInformation userInformation = new UserInformation();
+
+        userInformation.setUsersId(user.getUserId());
+        userInformation.setUserName(user.getUsername());
+        userInformation.setIsActive(user.isActive());
+
+        userInformation.setFirstName(userProfile.getFirstName());
+        userInformation.setLastName(userProfile.getLastName());
+        userInformation.setEmail(userProfile.getEmail());
+        userInformation.setPhone(userProfile.getPhone());
+
+        return userInformation;
+
     }
 
 }

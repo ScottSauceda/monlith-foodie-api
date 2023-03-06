@@ -36,6 +36,9 @@ public class Location {
     @Column(name = "users_id")
     private Integer userId;
 
+    @Column(name = "location_active")
+    private Integer locationActive;
+
     public Boolean compareValues(Location otherLocation) {
         Boolean same = true;
         if(!this.locationName.equals(otherLocation.getLocationName())){

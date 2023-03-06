@@ -26,6 +26,9 @@ public class User {
     @Column(name ="password")
     private String password;
 
+    @Column(name = "is_active")
+    private boolean isActive = true;
+
     @ManyToMany()
     @JoinTable(name = "assigned_roles",
             joinColumns = @JoinColumn(name = "users_id"),

@@ -1,5 +1,6 @@
 package com.foodie.monolith.controller;
 
+import com.foodie.monolith.data.UserInformation;
 import com.foodie.monolith.exception.UserNotFoundException;
 import com.foodie.monolith.model.User;
 import com.foodie.monolith.service.UserService;
@@ -10,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
-
+@CrossOrigin(origins = {"http://localhost:4200", "http://localhost:3000"})
 @RestController
 @RequestMapping("/user")
 public class UserController {
@@ -28,8 +29,17 @@ public class UserController {
         }
     }
 
+    @GetMapping("/allUserInformation")
+    public ResponseEntity<List<UserInformation>> getAllUserInformation() throws Exception {
+        try {
+            return ResponseEntity.status(HttpStatus.OK).body(userService.getAllUserInformation());
+        } catch(Exception exception){
+            return new ResponseEntity(exception.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
     @GetMapping(value = "/{userId}")
-    public ResponseEntity<Optional<User>> getUserById(@PathVariable Integer userId) throws UserNotFoundException {
+    public ResponseEntity<UserInformation> getUserById(@PathVariable Integer userId) throws UserNotFoundException {
         try {
             return ResponseEntity.status(HttpStatus.OK).body(userService.getUserById(userId));
         } catch(UserNotFoundException userNotFoundException){
