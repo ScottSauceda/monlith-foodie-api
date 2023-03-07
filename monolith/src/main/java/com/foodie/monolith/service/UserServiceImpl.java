@@ -1,9 +1,7 @@
 package com.foodie.monolith.service;
 
 import com.foodie.monolith.data.UserInformation;
-import com.foodie.monolith.exception.LocationNotFoundException;
 import com.foodie.monolith.exception.UserNotFoundException;
-import com.foodie.monolith.model.Location;
 import com.foodie.monolith.model.User;
 import com.foodie.monolith.model.UserProfile;
 import com.foodie.monolith.repository.UserProfileRepository;
@@ -59,7 +57,6 @@ public class UserServiceImpl implements UserService {
         if(userRepository.findById(userId).isEmpty()){
             throw new UserNotFoundException("Location with Id: " + userId + " does not exists. Please try again.");
         } else {
-
             userInformation = getUserInformation(userId);
         }
         return userInformation;
@@ -88,6 +85,31 @@ public class UserServiceImpl implements UserService {
 
             return "User has been updated successfully";
         }
+    }
+
+    @Transactional
+    public String setUserActive(UserInformation userInformation) throws UserNotFoundException {
+        User userToUpdate = userRepository.findById(userInformation.getUsersId()).orElse(null);
+
+        if(userRepository.findById(userInformation.getUsersId()).isEmpty()) {
+            throw new UserNotFoundException("Something went wrong. Please try again");
+        } else {
+            User updateUser = userRepository.getById(userInformation.getUsersId());
+            updateUser.setUserId(userInformation.getUsersId());
+            updateUser.setPassword(userToUpdate.getPassword());
+            updateUser.setUsername(userInformation.getUserName());
+            updateUser.setActive(userInformation.getIsActive());
+
+            System.out.println("setUserActive data");
+            System.out.println(updateUser.getUserId());
+            System.out.println(updateUser.getUsername());
+            System.out.println(updateUser.isActive());
+
+
+            userRepository.save(updateUser);
+            return "User has been updated successfully";
+        }
+
     }
 
     @Transactional

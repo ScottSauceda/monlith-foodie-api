@@ -12,10 +12,12 @@ public interface UserService {
     public List<UserInformation> getAllUserInformation() throws Exception;
 
     public UserInformation getUserById(Integer userId);
-//
+
     public String createUser(User newUser);
-//
+
     public String updateUser(Integer userId, User updateUser);
-//
+
+    public String setUserActive(UserInformation userInformation);
+
     public String deleteUser(Integer userId);
 }

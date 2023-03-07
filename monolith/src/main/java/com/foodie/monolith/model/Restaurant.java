@@ -21,15 +21,23 @@ public class Restaurant {
     private Integer restaurantId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "location_id")
-    private Location location;
-
-    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id")
     private User owner;
     
     @Column(name = "name", length = 45)
     private String name;
+
+    @Column(name = "address", length = 45)
+    private String address;
+
+    @Column(name = "city", length = 45)
+    private String city;
+
+    @Column(name = "state", length = 45)
+    private String state;
+
+    @Column(name = "zip_code", length = 45)
+    private Integer zipCode;
 
     @Column(name = "is_active")
     private boolean isActive = true;

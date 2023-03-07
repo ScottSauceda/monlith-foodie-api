@@ -4,6 +4,7 @@ import com.foodie.monolith.data.UserInformation;
 import com.foodie.monolith.exception.UserNotFoundException;
 import com.foodie.monolith.model.User;
 import com.foodie.monolith.service.UserService;
+import com.foodie.monolith.service.UserServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -61,6 +62,15 @@ public class UserController {
     public ResponseEntity<String> updateUser(@PathVariable Integer userId, @RequestBody User updateUser) throws UserNotFoundException {
         try {
             return ResponseEntity.status(HttpStatus.OK).body(userService.updateUser(userId, updateUser));
+        } catch(UserNotFoundException userNotFoundException){
+            return new ResponseEntity(userNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PutMapping(value = "/setActive")
+    public ResponseEntity<String> setUserActive(@RequestBody UserInformation userInformation) throws UserNotFoundException {
+        try {
+            return ResponseEntity.status(HttpStatus.OK).body(userService.setUserActive(userInformation));
         } catch(UserNotFoundException userNotFoundException){
             return new ResponseEntity(userNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
         }

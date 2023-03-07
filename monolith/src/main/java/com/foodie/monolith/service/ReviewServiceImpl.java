@@ -1,13 +1,8 @@
 package com.foodie.monolith.service;
 
-import com.foodie.monolith.exception.LocationNotFoundException;
 import com.foodie.monolith.exception.ReviewNotFoundException;
 import com.foodie.monolith.exception.UserNotFoundException;
-import com.foodie.monolith.exception.UserProfileNotFoundException;
-import com.foodie.monolith.model.Location;
 import com.foodie.monolith.model.Review;
-import com.foodie.monolith.model.Role;
-import com.foodie.monolith.model.UserProfile;
 import com.foodie.monolith.repository.ReviewRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;

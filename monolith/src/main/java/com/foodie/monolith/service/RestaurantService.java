@@ -1,7 +1,6 @@
 package com.foodie.monolith.service;
 
 import com.foodie.monolith.data.RestaurantInformation;
-import com.foodie.monolith.model.Location;
 import com.foodie.monolith.model.Restaurant;
 
 import java.util.List;
@@ -16,7 +15,7 @@ public interface RestaurantService {
 
     public String createRestaurant(Restaurant newRestaurant);
 
-    public String updateRestaurant(Integer restaurantId, Restaurant updateRestaurant);
+    public String updateRestaurant(Integer restaurantId, RestaurantInformation updateRestaurant);
 
     public String deleteRestaurant(Integer restaurantId);
 

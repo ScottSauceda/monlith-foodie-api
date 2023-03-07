@@ -27,7 +27,7 @@ public class User {
     private String password;
 
     @Column(name = "is_active")
-    private boolean isActive = true;
+    private boolean isActive;
 
     @ManyToMany()
     @JoinTable(name = "assigned_roles",

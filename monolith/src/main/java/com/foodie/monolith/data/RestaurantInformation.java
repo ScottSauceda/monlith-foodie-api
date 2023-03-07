@@ -13,20 +13,16 @@ import java.util.List;
 public class RestaurantInformation {
 
     private Integer restaurantId;
-    private Integer location_id;
-    private Integer owner_id;
     private String name;
-
-    // matches to location_id
-    private String location_name;
     private String address;
     private String city;
     private String state;
-    private Integer zip_code;
+    private Integer zipCode;
+    private Integer ownerId;
+    private Boolean isActive;
 
     // matches to owner_id
-    private String owner_name;
-
+    private String ownerName;
     // matches to restaurant reviews;
     private List<Review> restaurantReviews;
 

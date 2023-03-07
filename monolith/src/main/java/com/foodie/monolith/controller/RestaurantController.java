@@ -2,13 +2,9 @@ package com.foodie.monolith.controller;
 
 
 import com.foodie.monolith.data.RestaurantInformation;
-import com.foodie.monolith.exception.LocationNotFoundException;
 import com.foodie.monolith.exception.RestaurantNotFoundException;
-import com.foodie.monolith.exception.ReviewNotFoundException;
 import com.foodie.monolith.exception.UserNotFoundException;
-import com.foodie.monolith.model.Location;
 import com.foodie.monolith.model.Restaurant;
-import com.foodie.monolith.model.Review;
 import com.foodie.monolith.service.RestaurantService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -68,11 +64,13 @@ public class RestaurantController {
 
 
     @PutMapping(value = "/update/{restaurantId}")
-    public ResponseEntity<String> updateRestaurant(@PathVariable Integer restaurantId, @RequestBody Restaurant updateRestaurant) throws RestaurantNotFoundException {
+    public ResponseEntity<String> updateRestaurant(@PathVariable Integer restaurantId, @RequestBody RestaurantInformation updateRestaurant) throws RestaurantNotFoundException, UserNotFoundException {
         try {
             return ResponseEntity.status(HttpStatus.OK).body(restaurantService.updateRestaurant(restaurantId, updateRestaurant));
         } catch(RestaurantNotFoundException restaurantNotFoundException){
             return new ResponseEntity(restaurantNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch(UserNotFoundException userNotFoundException){
+            return new ResponseEntity(userNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 

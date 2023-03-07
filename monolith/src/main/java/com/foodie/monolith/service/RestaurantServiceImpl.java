@@ -1,10 +1,8 @@
 package com.foodie.monolith.service;
 
 import com.foodie.monolith.data.RestaurantInformation;
-import com.foodie.monolith.exception.LocationNotFoundException;
 import com.foodie.monolith.exception.RestaurantNotFoundException;
 import com.foodie.monolith.exception.UserNotFoundException;
-import com.foodie.monolith.model.Location;
 import com.foodie.monolith.model.Restaurant;
 import com.foodie.monolith.repository.RestaurantRepository;
 import com.foodie.monolith.repository.UserRepository;
@@ -78,18 +76,29 @@ public class RestaurantServiceImpl implements RestaurantService {
     }
 
     @Transactional
-    public String updateRestaurant(Integer restaurantId, Restaurant updateRestaurant) throws RestaurantNotFoundException {
-//        Restaurant dbRestaurant = restaurantRepository.findById(restaurantId).orElse(null);;
-//
-//        if(dbRestaurant == null){
-//            throw new RestaurantNotFoundException("Restaurant with Id: " + restaurantId + " does not exists. Please try again.");
-//        } else {
-//            dbRestaurant.setLocationId(updateRestaurant.getLocationId());
-//            dbRestaurant.setOwnerId(updateRestaurant.getOwnerId());
-//            dbRestaurant.setName(updateRestaurant.getName());
-//
-            return "Restaurant has been updated successfully";
-//        }
+    public String updateRestaurant(Integer restaurantId, RestaurantInformation updateRestaurant) throws RestaurantNotFoundException {
+        Restaurant dbRestaurant = null;
+        int ownerId = updateRestaurant.getOwnerId();
+
+        if(restaurantRepository.findById(restaurantId).isEmpty()){
+            throw new RestaurantNotFoundException("#02 Restaurant with Id: " + restaurantId + " does not exists. Please try again.");
+        } else {
+            if(userRepository.findById(ownerId).isEmpty()){
+                throw new UserNotFoundException("#01 Something went wrong. Please try again");
+            } else {
+                dbRestaurant = restaurantRepository.getById(restaurantId);
+                dbRestaurant.setOwner(userRepository.getById(ownerId));
+                dbRestaurant.setName(updateRestaurant.getName());
+                dbRestaurant.setAddress(updateRestaurant.getAddress());
+                dbRestaurant.setCity(updateRestaurant.getCity());
+                dbRestaurant.setState(updateRestaurant.getState());
+                dbRestaurant.setZipCode(updateRestaurant.getZipCode());
+                dbRestaurant.setActive(updateRestaurant.getIsActive());
+                restaurantRepository.save(dbRestaurant);
+
+                return "Restaurant has been updated successfully";
+            }
+        }
     }
 
     @Transactional
@@ -113,16 +122,15 @@ public class RestaurantServiceImpl implements RestaurantService {
 
         restaurantInformation.setRestaurantId(restaurant.getRestaurantId());
         restaurantInformation.setName(restaurant.getName());
+        restaurantInformation.setIsActive(restaurant.isActive());
         // set restaurant owner information
-        restaurantInformation.setOwner_id(restaurant.getOwner().getUserId());
-        restaurantInformation.setOwner_name(restaurant.getOwner().getUsername());
+        restaurantInformation.setOwnerId(restaurant.getOwner().getUserId());
+        restaurantInformation.setOwnerName(restaurant.getOwner().getUsername());
         // set restaurant location information
-        restaurantInformation.setLocation_id(restaurant.getLocation().getLocationId());
-        restaurantInformation.setLocation_name(restaurant.getLocation().getLocationName());
-        restaurantInformation.setAddress(restaurant.getLocation().getAddress());
-        restaurantInformation.setCity(restaurant.getLocation().getCity());
-        restaurantInformation.setState(restaurant.getLocation().getState());
-        restaurantInformation.setZip_code(restaurant.getLocation().getZipCode());
+        restaurantInformation.setAddress(restaurant.getAddress());
+        restaurantInformation.setCity(restaurant.getCity());
+        restaurantInformation.setState(restaurant.getState());
+        restaurantInformation.setZipCode(restaurant.getZipCode());
         // set restaurantTags information
         if(restaurant.getReviews() != null){
             restaurantInformation.setRestaurantReviews(restaurant.getReviews());
@@ -132,13 +140,13 @@ public class RestaurantServiceImpl implements RestaurantService {
     }
 
     @Transactional
-    public Restaurant buildRestaurant(RestaurantInformation information, Location location){
+    public Restaurant buildRestaurant(RestaurantInformation information){
         Restaurant createdRestaurant = new Restaurant();
 
         // TODO: Do proper error throwing if Id, name etc are not provided
-        createdRestaurant.setOwner(userRepository.getById(information.getOwner_id()));
+        createdRestaurant.setOwner(userRepository.getById(information.getOwnerId()));
         createdRestaurant.setName(information.getName());
-        createdRestaurant.setLocation(location);
+//        createdRestaurant.setLocation(location);
         // TODO: Set Tags / Reviews
 
         return createdRestaurant;
