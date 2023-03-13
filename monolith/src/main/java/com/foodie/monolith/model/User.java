@@ -29,18 +29,24 @@ public class User {
     @Column(name = "is_active")
     private boolean isActive;
 
-    @ManyToMany()
+    @OneToOne
     @JoinTable(name = "assigned_roles",
             joinColumns = @JoinColumn(name = "users_id"),
             inverseJoinColumns = @JoinColumn(name = "roles_id"))
-    private List<Role> userRoles;
+    private Role userRole;
 
-    public void addRole(Role toAdd){
-        if(userRoles == null){
-            userRoles = new ArrayList<>();
-        }
-        userRoles.add(toAdd);
-    }
+//    @ManyToMany()
+//    @JoinTable(name = "assigned_roles",
+//            joinColumns = @JoinColumn(name = "users_id"),
+//            inverseJoinColumns = @JoinColumn(name = "roles_id"))
+//    private List<Role> userRoles;
+//
+//    public void addRole(Role toAdd){
+//        if(userRoles == null){
+//            userRoles = new ArrayList<>();
+//        }
+//        userRoles.add(toAdd);
+//    }
 
 
 

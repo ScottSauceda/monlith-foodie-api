@@ -1,5 +1,6 @@
 package com.foodie.monolith.service;
 
+import com.foodie.monolith.data.NewUserInformation;
 import com.foodie.monolith.data.UserInformation;
 import com.foodie.monolith.model.User;
 
@@ -13,11 +14,13 @@ public interface UserService {
 
     public UserInformation getUserById(Integer userId);
 
-    public String createUser(User newUser);
+    public String createUser(NewUserInformation newUserInformation);
 
     public String updateUser(Integer userId, User updateUser);
 
     public String setUserActive(UserInformation userInformation);
 
     public String deleteUser(Integer userId);
+
+    public UserInformation login(User user);
 }

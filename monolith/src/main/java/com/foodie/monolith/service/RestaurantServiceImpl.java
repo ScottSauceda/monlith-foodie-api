@@ -4,6 +4,7 @@ import com.foodie.monolith.data.RestaurantInformation;
 import com.foodie.monolith.exception.RestaurantNotFoundException;
 import com.foodie.monolith.exception.UserNotFoundException;
 import com.foodie.monolith.model.Restaurant;
+import com.foodie.monolith.model.User;
 import com.foodie.monolith.repository.RestaurantRepository;
 import com.foodie.monolith.repository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -64,15 +65,42 @@ public class RestaurantServiceImpl implements RestaurantService {
     }
 
     @Transactional
-    public String createRestaurant(Restaurant newRestaurant) {
-        Restaurant savedRestaurant = null;
-        savedRestaurant = restaurantRepository.saveAndFlush(newRestaurant);
+    public String createRestaurant(RestaurantInformation newRestaurant) throws UserNotFoundException {
+        Restaurant savedRestaurant = new Restaurant();
 
-        if(savedRestaurant.getRestaurantId() != null){
-            return "New Restaurant created with Id: " + savedRestaurant.getRestaurantId();
-        } else {
-            return "Something went wrong. Please try again";
+        if(newRestaurant == null){
+            System.out.println("new Restaurant is null");
         }
+
+        int ownerId = newRestaurant.getOwnerId();
+
+        System.out.println("newRestaurant ownerId");
+        System.out.println(newRestaurant.getOwnerId());
+
+
+        if(userRepository.findById(ownerId).isEmpty()){
+            throw new UserNotFoundException("#01 Something went wrong. Please try again");
+        } else {
+            savedRestaurant.setOwner(userRepository.findById(ownerId).orElse(null));
+            savedRestaurant.setName(newRestaurant.getName());
+            savedRestaurant.setAddress(newRestaurant.getAddress());
+            savedRestaurant.setCity(newRestaurant.getCity());
+            savedRestaurant.setState(newRestaurant.getState());
+            savedRestaurant.setZipCode(newRestaurant.getZipCode());
+            savedRestaurant.setActive(newRestaurant.getIsActive());
+            savedRestaurant = restaurantRepository.saveAndFlush(savedRestaurant);
+
+            if(savedRestaurant == null){
+                System.out.println("savedRestaurant is null");
+            }
+
+            if(savedRestaurant.getRestaurantId() != null){
+                return "New Restaurant created with Id: " + savedRestaurant.getRestaurantId();
+            } else {
+                return "Something went wrong. Please try again";
+            }
+        }
+
     }
 
     @Transactional
@@ -100,6 +128,28 @@ public class RestaurantServiceImpl implements RestaurantService {
             }
         }
     }
+
+    @Transactional
+    public String setRestaurantActive(RestaurantInformation restaurantInformation) throws RestaurantNotFoundException, UserNotFoundException {
+        Restaurant restaurantToUpdate = restaurantRepository.findById(restaurantInformation.getRestaurantId()).orElse(null);
+        User user = userRepository.findById(restaurantInformation.getOwnerId()).orElse(null);
+
+        if (restaurantRepository.findById(restaurantInformation.getRestaurantId()).isEmpty()) {
+            throw new RestaurantNotFoundException("Something went wrong. Please try again");
+        } else {
+            if (userRepository.findById(restaurantInformation.getOwnerId()).isEmpty()) {
+                throw new UserNotFoundException("Something went wrong. Please try again");
+            } else {
+                Restaurant updateRestaurant = restaurantRepository.getById(restaurantInformation.getRestaurantId());
+                updateRestaurant.setOwner(user);
+                updateRestaurant.setActive(restaurantInformation.getIsActive());
+                restaurantRepository.save(updateRestaurant);
+                return "Restaurant active status has been updated successfully";
+            }
+        }
+    }
+
+
 
     @Transactional
     public String deleteRestaurant(Integer restaurantId) throws RestaurantNotFoundException {

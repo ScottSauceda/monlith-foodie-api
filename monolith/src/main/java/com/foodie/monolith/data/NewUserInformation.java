@@ -5,22 +5,22 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
-public class UserInformation {
+@AllArgsConstructor
+public class NewUserInformation {
 
-    // user
-    private Integer usersId;
+    // User Model
     private String userName;
+    private String password;
     private Boolean isActive;
 
-    // profile
-    private String firstName;
-    private String lastName;
+    // UserProfile Model
     private String email;
     private String phone;
+    private String firstName;
+    private String lastName;
 
-    // assignedRole
-    private String roleName;
+    // AssignRole Model
+    private Integer roleId;
 
 }

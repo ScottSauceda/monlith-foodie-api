@@ -1,5 +1,6 @@
 package com.foodie.monolith.controller;
 
+import com.foodie.monolith.data.NewUserInformation;
 import com.foodie.monolith.data.UserInformation;
 import com.foodie.monolith.exception.UserNotFoundException;
 import com.foodie.monolith.model.User;
@@ -49,9 +50,9 @@ public class UserController {
     }
 
     @PostMapping(value = "/create")
-    public ResponseEntity<String> createUser(@RequestBody User newUser) throws Exception {
+    public ResponseEntity<String> createUser(@RequestBody NewUserInformation newUserInformation) throws Exception {
         try {
-            return ResponseEntity.status(HttpStatus.OK).body(userService.createUser(newUser));
+            return ResponseEntity.status(HttpStatus.OK).body(userService.createUser(newUserInformation));
         } catch(Exception exception){
             return new ResponseEntity(exception.getMessage(), HttpStatus.BAD_REQUEST);
         }
@@ -70,6 +71,7 @@ public class UserController {
     @PutMapping(value = "/setActive")
     public ResponseEntity<String> setUserActive(@RequestBody UserInformation userInformation) throws UserNotFoundException {
         try {
+            System.out.println("reached set user active");
             return ResponseEntity.status(HttpStatus.OK).body(userService.setUserActive(userInformation));
         } catch(UserNotFoundException userNotFoundException){
             return new ResponseEntity(userNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
@@ -84,5 +86,16 @@ public class UserController {
             return new ResponseEntity(userNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
+
+
+    @PostMapping(value = "/login")
+    public ResponseEntity<UserInformation> login(@RequestBody User user) throws UserNotFoundException {
+        try {
+            return ResponseEntity.status(HttpStatus.OK).body(userService.login(user));
+        } catch(UserNotFoundException userNotFoundException){
+            return new ResponseEntity(userNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
 
 }

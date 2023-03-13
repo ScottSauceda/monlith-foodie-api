@@ -54,7 +54,7 @@ public class RestaurantController {
     }
 
     @PostMapping(value = "/create")
-    public ResponseEntity<String> createRestaurant(@RequestBody Restaurant newRestaurant) throws Exception {
+    public ResponseEntity<String> createRestaurant(@RequestBody RestaurantInformation newRestaurant) throws Exception {
         try {
             return ResponseEntity.status(HttpStatus.OK).body(restaurantService.createRestaurant(newRestaurant));
         } catch(Exception exception){
@@ -67,6 +67,17 @@ public class RestaurantController {
     public ResponseEntity<String> updateRestaurant(@PathVariable Integer restaurantId, @RequestBody RestaurantInformation updateRestaurant) throws RestaurantNotFoundException, UserNotFoundException {
         try {
             return ResponseEntity.status(HttpStatus.OK).body(restaurantService.updateRestaurant(restaurantId, updateRestaurant));
+        } catch(RestaurantNotFoundException restaurantNotFoundException){
+            return new ResponseEntity(restaurantNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch(UserNotFoundException userNotFoundException){
+            return new ResponseEntity(userNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PutMapping(value = "/setActive")
+    public ResponseEntity<String> setRestaurantActive(@RequestBody RestaurantInformation restaurantInformation) throws RestaurantNotFoundException, UserNotFoundException {
+        try {
+            return ResponseEntity.status(HttpStatus.OK).body(restaurantService.setRestaurantActive(restaurantInformation));
         } catch(RestaurantNotFoundException restaurantNotFoundException){
             return new ResponseEntity(restaurantNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
         } catch(UserNotFoundException userNotFoundException){

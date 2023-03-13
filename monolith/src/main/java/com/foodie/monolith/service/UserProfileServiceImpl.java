@@ -66,6 +66,13 @@ public class UserProfileServiceImpl implements UserProfileService {
     public String updateUserProfile(Integer userId, UserProfile updateUserProfile) throws UserProfileNotFoundException {
         UserProfile dbUserProfile = userProfileRepository.findById(userId).orElse(null);;
 
+        System.out.println("update user profile");
+        System.out.println(updateUserProfile.getUsersId());
+        System.out.println(updateUserProfile.getEmail());
+        System.out.println(updateUserProfile.getPhone());
+        System.out.println(updateUserProfile.getFirstName());
+        System.out.println(updateUserProfile.getLastName());
+
         if(dbUserProfile == null){
             throw new UserProfileNotFoundException("UserProfile with Id: " + userId + "does not exists. Please try again.");
         } else {
