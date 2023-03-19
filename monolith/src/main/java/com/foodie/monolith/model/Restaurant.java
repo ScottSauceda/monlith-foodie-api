@@ -49,5 +49,12 @@ public class Restaurant {
     )
     private List<Review> reviews;
 
+    @OneToMany
+    @JoinTable(name = "restaurant_images",
+            joinColumns = @JoinColumn(name = "restaurants_id"),
+            inverseJoinColumns = @JoinColumn(name = "images_id")
+    )
+    private List<Image> images;
+
 
 }

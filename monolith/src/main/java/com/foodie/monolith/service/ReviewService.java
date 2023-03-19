@@ -13,7 +13,7 @@ public interface ReviewService {
 
     public Optional<Review> getReviewById(Integer reviewId);
 
-    public String createReview(Review newReview);
+    public String createReview(Review newReview, Integer restaurantId);
 
     public String updateReview(Integer reviewId, Review updateReview);
 

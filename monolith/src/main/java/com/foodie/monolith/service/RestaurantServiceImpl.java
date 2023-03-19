@@ -186,6 +186,10 @@ public class RestaurantServiceImpl implements RestaurantService {
             restaurantInformation.setRestaurantReviews(restaurant.getReviews());
         }
 
+        if(restaurant.getImages() != null){
+            restaurantInformation.setRestaurantImages(restaurant.getImages());
+        }
+
         return restaurantInformation;
     }
 

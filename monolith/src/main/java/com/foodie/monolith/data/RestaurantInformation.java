@@ -1,5 +1,6 @@
 package com.foodie.monolith.data;
 
+import com.foodie.monolith.model.Image;
 import com.foodie.monolith.model.Review;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -23,8 +24,11 @@ public class RestaurantInformation {
 
     // matches to owner_id
     private String ownerName;
-    // matches to restaurant reviews;
+
+    // matches to restaurant reviews
     private List<Review> restaurantReviews;
 
+    // matches to restaurant images
+    private List<Image> restaurantImages;
 
 }

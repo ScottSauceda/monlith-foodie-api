@@ -262,6 +262,20 @@ public class UserServiceImpl implements UserService {
             System.out.println("no roles for this user");
         }
 
+        // set user image information
+        if(userProfile.getProfileImage() != null){
+            System.out.println("User is assigned a role");
+
+            userInformation.setProfileImage(userProfile.getProfileImage());
+
+//            userInformation.setRoleName(user.getUserRoles()
+//                    .stream()
+//                    .map(role -> role.getRoleName())
+//                    .toString());
+        } else {
+            System.out.println("no profile image for this user");
+        }
+
         return userInformation;
 
     }

@@ -58,6 +58,7 @@ public class RestaurantReviewServiceImpl implements RestaurantReviewService {
     public String deleteRestaurantReview(Integer reviewId) throws ReviewNotFoundException {
         RestaurantReview dbRestaurantReview = restaurantReviewRepository.findByReviewsId(reviewId).orElse(null);
 
+
         if(dbRestaurantReview == null){
             throw new ReviewNotFoundException("RestaurantReview with reviewId: " + reviewId + " does not exists. Please try again.");
         } else {

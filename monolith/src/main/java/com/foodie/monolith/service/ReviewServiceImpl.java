@@ -1,9 +1,15 @@
 package com.foodie.monolith.service;
 
+import com.foodie.monolith.exception.RestaurantNotFoundException;
 import com.foodie.monolith.exception.ReviewNotFoundException;
 import com.foodie.monolith.exception.UserNotFoundException;
+import com.foodie.monolith.model.Restaurant;
+import com.foodie.monolith.model.RestaurantReview;
 import com.foodie.monolith.model.Review;
+import com.foodie.monolith.repository.RestaurantRepository;
+import com.foodie.monolith.repository.RestaurantReviewRepository;
 import com.foodie.monolith.repository.ReviewRepository;
+import com.foodie.monolith.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,6 +23,14 @@ public class ReviewServiceImpl implements  ReviewService {
 
     @Autowired
     ReviewRepository reviewRepository;
+    @Autowired
+    private RestaurantRepository restaurantRepository;
+
+    @Autowired
+    private RestaurantReviewRepository restaurantReviewRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Transactional
     public List<Review> getReviews() throws ReviewNotFoundException {
@@ -61,15 +75,39 @@ public class ReviewServiceImpl implements  ReviewService {
     }
 
     @Transactional
-    public String createReview(Review newReview) throws ReviewNotFoundException {
-        Review savedReview = null;
-        savedReview = reviewRepository.saveAndFlush(newReview);
+    public String createReview(Review newReview, Integer restaurantId) throws UserNotFoundException, ReviewNotFoundException, RestaurantNotFoundException {
 
-        if(savedReview.getReviewId() != null){
-            return "New Review created with Id: " + savedReview.getReviewId();
-        } else {
-            return "Something went wrong. Please try again";
+        // Review
+        Review savedReview = reviewRepository.saveAndFlush(newReview);
+
+        // RestaurantReview
+        RestaurantReview savedRestaurantReview = new RestaurantReview();
+
+        RestaurantReview newRestaurantReview = new RestaurantReview();
+        newRestaurantReview.setRestaurantsId(restaurantId);
+
+
+        if(userRepository.findById(newReview.getUserId()) == null){
+            throw new UserNotFoundException("User not found. Could not create review.");
         }
+
+        if(restaurantRepository.getById(restaurantId) == null){
+            throw new RestaurantNotFoundException("Restaurant not found. Could not create review.");
+        }
+
+        if(reviewRepository.findById(savedReview.getReviewId()) == null){
+            throw new ReviewNotFoundException("Review not created. Please try again.");
+        } else {
+            newRestaurantReview.setReviewsId(savedReview.getReviewId());
+            savedRestaurantReview = restaurantReviewRepository.saveAndFlush(newRestaurantReview);
+        }
+
+        if(savedRestaurantReview.getReviewsId() == null) {
+            throw new ReviewNotFoundException("Review not assigned. Please try again.");
+        } else {
+            return "New Review created with Id: " + savedReview.getReviewId() + " assigned to restaurant: " + savedRestaurantReview.getRestaurantsId();
+        }
+
     }
 
     @Transactional
@@ -89,12 +127,19 @@ public class ReviewServiceImpl implements  ReviewService {
     @Transactional
     public String deleteReview(Integer reviewId) throws ReviewNotFoundException {
         Review dbReview = reviewRepository.findById(reviewId).orElse(null);
+        RestaurantReview dbRestaurantReview = restaurantReviewRepository.findByReviewsId(reviewId).orElse(null);
 
-        if(dbReview == null){
+        if(reviewRepository.findById(reviewId) == null){
             throw new ReviewNotFoundException("Review with Id: " + reviewId + " does not exists. Please try again.");
         } else {
-            reviewRepository.delete(dbReview);
-            return "Review has been deleted successfully";
+
+            if(restaurantReviewRepository.findByReviewsId(reviewId) == null){
+                throw new ReviewNotFoundException("RestaurantReview with Id: " + reviewId + " does not exists. Please try again.");
+            } else {
+                restaurantReviewRepository.delete(dbRestaurantReview);
+                reviewRepository.delete(dbReview);
+                return "Review has been deleted successfully";
+            }
         }
     }
 

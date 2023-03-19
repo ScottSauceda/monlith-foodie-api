@@ -1,5 +1,6 @@
 package com.foodie.monolith.controller;
 
+import com.foodie.monolith.exception.RestaurantNotFoundException;
 import com.foodie.monolith.exception.ReviewNotFoundException;
 import com.foodie.monolith.exception.UserNotFoundException;
 import com.foodie.monolith.model.Review;
@@ -49,12 +50,16 @@ public class ReviewController {
         }
     }
 
-    @PostMapping(value = "/create")
-    public ResponseEntity<String> createReview(@RequestBody Review newReview) throws ReviewNotFoundException {
+    @PostMapping(value = "/create/{restaurantId}")
+    public ResponseEntity<String> createReview(@RequestBody Review newReview, @PathVariable Integer restaurantId) throws UserNotFoundException, ReviewNotFoundException, RestaurantNotFoundException {
         try {
-            return ResponseEntity.status(HttpStatus.OK).body(reviewService.createReview(newReview));
+            return ResponseEntity.status(HttpStatus.OK).body(reviewService.createReview(newReview, restaurantId));
+        }  catch (UserNotFoundException userNotFoundException) {
+            return new ResponseEntity(userNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
         } catch(ReviewNotFoundException reviewNotFoundException){
             return new ResponseEntity(reviewNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
+        }   catch(RestaurantNotFoundException restaurantNotFoundException) {
+            return new ResponseEntity(restaurantNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 
