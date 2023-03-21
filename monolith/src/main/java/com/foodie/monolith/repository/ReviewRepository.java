@@ -1,6 +1,5 @@
 package com.foodie.monolith.repository;
 
-import com.foodie.monolith.model.RestaurantReview;
 import com.foodie.monolith.model.Review;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

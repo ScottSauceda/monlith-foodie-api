@@ -2,18 +2,14 @@ package com.foodie.monolith.controller;
 
 import com.foodie.monolith.exception.ImageNotFoundException;
 import com.foodie.monolith.exception.RestaurantNotFoundException;
-import com.foodie.monolith.exception.ReviewNotFoundException;
 import com.foodie.monolith.model.RestaurantImage;
-import com.foodie.monolith.model.RestaurantReview;
 import com.foodie.monolith.service.RestaurantImageService;
-import com.foodie.monolith.service.RestaurantReviewService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @CrossOrigin(origins = {"http://localhost:4200", "http://localhost:3000"})
 @RestController

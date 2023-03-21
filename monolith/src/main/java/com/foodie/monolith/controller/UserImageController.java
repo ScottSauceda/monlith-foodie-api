@@ -57,6 +57,4 @@ public class UserImageController {
             return new ResponseEntity(userNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
-
-
 }

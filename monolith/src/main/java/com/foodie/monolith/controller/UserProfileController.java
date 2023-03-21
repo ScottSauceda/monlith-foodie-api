@@ -1,13 +1,10 @@
 package com.foodie.monolith.controller;
 
-import com.foodie.monolith.exception.RoleNotFoundException;
 import com.foodie.monolith.exception.UserNotFoundException;
 import com.foodie.monolith.exception.UserProfileNotFoundException;
-import com.foodie.monolith.model.Role;
 import com.foodie.monolith.model.UserProfile;
 import com.foodie.monolith.service.UserProfileService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -68,6 +65,4 @@ public class UserProfileController {
             return new ResponseEntity(userProfileNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
-
-
 }

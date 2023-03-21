@@ -68,6 +68,9 @@ public class RestaurantServiceImpl implements RestaurantService {
     public String createRestaurant(RestaurantInformation newRestaurant) throws UserNotFoundException {
         Restaurant savedRestaurant = new Restaurant();
 
+        System.out.println("newRestaurant");
+        System.out.println(newRestaurant);
+
         if(newRestaurant == null){
             System.out.println("new Restaurant is null");
         }

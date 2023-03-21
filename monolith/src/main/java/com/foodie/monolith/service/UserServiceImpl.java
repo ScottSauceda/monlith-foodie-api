@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -55,7 +54,6 @@ public class UserServiceImpl implements UserService {
                 userInformation.add(getUserInformation(dbUser.getUsersId()));
             }
         }
-
         return userInformation;
     }
 
@@ -253,11 +251,6 @@ public class UserServiceImpl implements UserService {
             System.out.println("User is assigned a role");
 
             userInformation.setRoleName(user.getUserRole().getRoleName());
-
-//            userInformation.setRoleName(user.getUserRoles()
-//                    .stream()
-//                    .map(role -> role.getRoleName())
-//                    .toString());
         } else {
             System.out.println("no roles for this user");
         }
@@ -267,17 +260,9 @@ public class UserServiceImpl implements UserService {
             System.out.println("User is assigned a role");
 
             userInformation.setProfileImage(userProfile.getProfileImage());
-
-//            userInformation.setRoleName(user.getUserRoles()
-//                    .stream()
-//                    .map(role -> role.getRoleName())
-//                    .toString());
         } else {
             System.out.println("no profile image for this user");
         }
-
         return userInformation;
-
     }
-
 }

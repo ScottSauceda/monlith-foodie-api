@@ -4,7 +4,6 @@ package com.foodie.monolith.controller;
 import com.foodie.monolith.data.RestaurantInformation;
 import com.foodie.monolith.exception.RestaurantNotFoundException;
 import com.foodie.monolith.exception.UserNotFoundException;
-import com.foodie.monolith.model.Restaurant;
 import com.foodie.monolith.service.RestaurantService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -12,12 +11,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @CrossOrigin(origins = {"http://localhost:4200", "http://localhost:3000"})
 @RestController
 @RequestMapping("/restaurant")
 public class RestaurantController {
+
+//    open -n -a /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --args --user-data-dir="/tmp/chrome_dev_test" --disable-web-security
 
     @Autowired
     RestaurantService restaurantService;

@@ -6,6 +6,7 @@ import com.foodie.monolith.exception.UserNotFoundException;
 import com.foodie.monolith.model.Restaurant;
 import com.foodie.monolith.model.RestaurantReview;
 import com.foodie.monolith.model.Review;
+import com.foodie.monolith.model.User;
 import com.foodie.monolith.repository.RestaurantRepository;
 import com.foodie.monolith.repository.RestaurantReviewRepository;
 import com.foodie.monolith.repository.ReviewRepository;
@@ -77,8 +78,12 @@ public class ReviewServiceImpl implements  ReviewService {
     @Transactional
     public String createReview(Review newReview, Integer restaurantId) throws UserNotFoundException, ReviewNotFoundException, RestaurantNotFoundException {
 
+        // find user from usersId in newReview
+        User newReviewUser = userRepository.findById(newReview.getUserId()).orElse(null);
+
         // Review
-        Review savedReview = reviewRepository.saveAndFlush(newReview);
+        Review savedReview = new Review();
+
 
         // RestaurantReview
         RestaurantReview savedRestaurantReview = new RestaurantReview();
@@ -87,13 +92,22 @@ public class ReviewServiceImpl implements  ReviewService {
         newRestaurantReview.setRestaurantsId(restaurantId);
 
 
-        if(userRepository.findById(newReview.getUserId()) == null){
+        if(newReviewUser == null){
             throw new UserNotFoundException("User not found. Could not create review.");
+        } else {
+            newReview.setUserName(newReviewUser.getUsername());
+            System.out.println("newReview userName");
+            System.out.println(newReview.getUserName());
         }
 
         if(restaurantRepository.getById(restaurantId) == null){
             throw new RestaurantNotFoundException("Restaurant not found. Could not create review.");
         }
+
+        System.out.println("newReview");
+        System.out.print(newReview);
+
+        savedReview = reviewRepository.saveAndFlush(newReview);
 
         if(reviewRepository.findById(savedReview.getReviewId()) == null){
             throw new ReviewNotFoundException("Review not created. Please try again.");

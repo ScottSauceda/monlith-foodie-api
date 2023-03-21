@@ -5,14 +5,12 @@ import com.foodie.monolith.data.UserInformation;
 import com.foodie.monolith.exception.UserNotFoundException;
 import com.foodie.monolith.model.User;
 import com.foodie.monolith.service.UserService;
-import com.foodie.monolith.service.UserServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 @CrossOrigin(origins = {"http://localhost:4200", "http://localhost:3000"})
 @RestController
 @RequestMapping("/user")
@@ -96,6 +94,4 @@ public class UserController {
             return new ResponseEntity(userNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
-
-
 }

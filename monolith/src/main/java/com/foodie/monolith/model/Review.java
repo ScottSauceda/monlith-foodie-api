@@ -32,4 +32,8 @@ public class Review {
 
     @Column(name = "users_id")
     private Integer userId;
+
+    @Column(name = "users_name")
+    private String userName;
+
 }
