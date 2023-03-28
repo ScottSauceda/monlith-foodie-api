@@ -9,13 +9,13 @@ import java.util.Optional;
 public interface ReviewService {
     public List<Review> getReviews();
 
-    public List<Review> getUserReviews(Integer userId);
+    public List<Review> getUserReviews(Long userId, String foodieCookie);
 
-    public Optional<Review> getReviewById(Integer reviewId);
+    public Optional<Review> getReviewById(Integer reviewId, String foodieCookie);
 
-    public String createReview(Review newReview, Integer restaurantId);
+    public String createReview(String foodieCookie, Integer restaurantId, Review newReview);
 
-    public String updateReview(Integer reviewId, Review updateReview);
+    public String updateReview(Integer reviewId, Review updateReview, String foodieCookie);
 
-    public String deleteReview(Integer reviewId);
+    public String deleteReview(Integer reviewId, String foodieCookie);
 }

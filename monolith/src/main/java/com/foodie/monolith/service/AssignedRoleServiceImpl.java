@@ -32,7 +32,7 @@ public class AssignedRoleServiceImpl implements AssignedRoleService {
     }
 
     @Transactional
-    public Optional<AssignedRole> getAssignedRoleByUserId(Integer userId) throws UserNotFoundException {
+    public Optional<AssignedRole> getAssignedRoleByUserId(Long userId) throws UserNotFoundException {
         Optional<AssignedRole> assignedRole = null;
         if(assignedRoleRepository.findByUsersId(userId).isEmpty()){
             throw new UserNotFoundException("AssignedRole with userId: " + userId + " does not exists. Please try again.");
@@ -55,7 +55,7 @@ public class AssignedRoleServiceImpl implements AssignedRoleService {
     }
 
     @Transactional
-    public String deleteAssignedRole(Integer userId) throws UserNotFoundException {
+    public String deleteAssignedRole(Long userId) throws UserNotFoundException {
         AssignedRole dbAssignedRole = assignedRoleRepository.findByUsersId(userId).orElse(null);
 
         if(dbAssignedRole == null){

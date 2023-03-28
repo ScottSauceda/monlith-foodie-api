@@ -9,12 +9,12 @@ import java.util.Optional;
 public interface UserProfileService {
     public List<UserProfile> getUserProfiles();
 
-    public Optional<UserProfile> getUserProfileByUserId(Integer userId);
+    public Optional<UserProfile> getUserProfileByUserId(Long userId);
 
     public String createUserProfile(UserProfile newUserProfile);
 
-    public String updateUserProfile(Integer userId, UserProfile updateUserProfile);
+    public String updateUserProfile(String foodieCookie, UserProfile updateUserProfile);
 
-    public String deleteUserProfile(Integer userId);
+    public String deleteUserProfile(Long userId);
 
 }

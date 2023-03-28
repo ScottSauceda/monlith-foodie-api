@@ -4,7 +4,9 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -18,7 +20,7 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
-    private int userId;
+    private Long userId;
 
     @Column(name ="username", unique = true)
     private String username;
@@ -29,11 +31,17 @@ public class User {
     @Column(name = "is_active")
     private boolean isActive;
 
-    @OneToOne
+//    @OneToOne
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "assigned_roles",
             joinColumns = @JoinColumn(name = "users_id"),
             inverseJoinColumns = @JoinColumn(name = "roles_id"))
-    private Role userRole;
+    private Set<Role> userRoles = new HashSet<>();
+
+    public User(String username, String password){
+        this.username = username;
+        this.password = password;
+    }
 
 //    @ManyToMany()
 //    @JoinTable(name = "assigned_roles",

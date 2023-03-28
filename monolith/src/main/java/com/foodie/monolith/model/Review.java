@@ -30,10 +30,10 @@ public class Review {
     @Column(name = "review_text", length = 250)
     private String reviewText;
 
-    @Column(name = "users_id")
-    private Integer userId;
-
     @Column(name = "users_name")
     private String userName;
+
+    @Column(name = "users_id")
+    private Long userId;
 
 }

@@ -8,13 +8,15 @@ import com.foodie.monolith.service.RestaurantService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@CrossOrigin(origins = {"http://localhost:4200", "http://localhost:3000"})
+//@CrossOrigin(origins = {"http://localhost:4200", "http://localhost:3000"})
+@CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
-@RequestMapping("/restaurant")
+@RequestMapping("/api/restaurant")
 public class RestaurantController {
 
 //    open -n -a /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --args --user-data-dir="/tmp/chrome_dev_test" --disable-web-security
@@ -32,9 +34,10 @@ public class RestaurantController {
     }
 
     @GetMapping(value = "/restaurants/{userId}")
-    public ResponseEntity<List<RestaurantInformation>> getUserRestaurants(@PathVariable Integer userId) throws UserNotFoundException, RestaurantNotFoundException {
+    @PreAuthorize("hasRole('OWNER') or hasRole('ADMIN')")
+    public ResponseEntity<List<RestaurantInformation>> getUserRestaurants(@PathVariable Long userId, @CookieValue("foodie") String foodieCookie) throws UserNotFoundException, RestaurantNotFoundException {
         try {
-            return ResponseEntity.status(HttpStatus.OK).body(restaurantService.getUserRestaurants(userId));
+            return ResponseEntity.status(HttpStatus.OK).body(restaurantService.getUserRestaurants(userId, foodieCookie));
         } catch(UserNotFoundException userNotFoundException){
             return new ResponseEntity(userNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
         } catch(RestaurantNotFoundException restaurantNotFoundException){
@@ -54,19 +57,20 @@ public class RestaurantController {
     }
 
     @PostMapping(value = "/create")
-    public ResponseEntity<String> createRestaurant(@RequestBody RestaurantInformation newRestaurant) throws Exception {
+    @PreAuthorize("hasRole('OWNER') or hasRole('ADMIN')")
+    public ResponseEntity<String> createRestaurant(@RequestBody RestaurantInformation newRestaurant, @CookieValue("foodie") String foodieCookie) throws Exception {
         try {
-            return ResponseEntity.status(HttpStatus.OK).body(restaurantService.createRestaurant(newRestaurant));
+            return ResponseEntity.status(HttpStatus.OK).body(restaurantService.createRestaurant(newRestaurant, foodieCookie));
         } catch(Exception exception){
             return new ResponseEntity(exception.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 
-
     @PutMapping(value = "/update/{restaurantId}")
-    public ResponseEntity<String> updateRestaurant(@PathVariable Integer restaurantId, @RequestBody RestaurantInformation updateRestaurant) throws RestaurantNotFoundException, UserNotFoundException {
+    @PreAuthorize("hasRole('OWNER') or hasRole('ADMIN')")
+    public ResponseEntity<String> updateRestaurant(@PathVariable Integer restaurantId, @RequestBody RestaurantInformation updateRestaurant, @CookieValue("foodie") String foodieCookie) throws RestaurantNotFoundException, UserNotFoundException {
         try {
-            return ResponseEntity.status(HttpStatus.OK).body(restaurantService.updateRestaurant(restaurantId, updateRestaurant));
+            return ResponseEntity.status(HttpStatus.OK).body(restaurantService.updateRestaurant(restaurantId, updateRestaurant, foodieCookie));
         } catch(RestaurantNotFoundException restaurantNotFoundException){
             return new ResponseEntity(restaurantNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
         } catch(UserNotFoundException userNotFoundException){
@@ -75,9 +79,10 @@ public class RestaurantController {
     }
 
     @PutMapping(value = "/setActive")
-    public ResponseEntity<String> setRestaurantActive(@RequestBody RestaurantInformation restaurantInformation) throws RestaurantNotFoundException, UserNotFoundException {
+    @PreAuthorize("hasRole('OWNER') or hasRole('ADMIN')")
+    public ResponseEntity<String> setRestaurantActive(@RequestBody RestaurantInformation restaurantInformation, @CookieValue("foodie") String foodieCookie) throws RestaurantNotFoundException, UserNotFoundException {
         try {
-            return ResponseEntity.status(HttpStatus.OK).body(restaurantService.setRestaurantActive(restaurantInformation));
+            return ResponseEntity.status(HttpStatus.OK).body(restaurantService.setRestaurantActive(restaurantInformation, foodieCookie));
         } catch(RestaurantNotFoundException restaurantNotFoundException){
             return new ResponseEntity(restaurantNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
         } catch(UserNotFoundException userNotFoundException){
@@ -86,9 +91,10 @@ public class RestaurantController {
     }
 
     @DeleteMapping(value = "/delete/{restaurantId}")
-    public ResponseEntity<String> deleteRestaurant(@PathVariable Integer restaurantId) throws RestaurantNotFoundException {
+    @PreAuthorize("hasRole('OWNER') or hasRole('ADMIN')")
+    public ResponseEntity<String> deleteRestaurant(@PathVariable Integer restaurantId, @CookieValue("foodie") String foodieCookie) throws RestaurantNotFoundException {
         try {
-            return ResponseEntity.status(HttpStatus.OK).body(restaurantService.deleteRestaurant(restaurantId));
+            return ResponseEntity.status(HttpStatus.OK).body(restaurantService.deleteRestaurant(restaurantId, foodieCookie));
         } catch(RestaurantNotFoundException restaurantNotFoundException){
             return new ResponseEntity(restaurantNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
         }

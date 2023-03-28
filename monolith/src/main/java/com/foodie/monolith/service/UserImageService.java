@@ -9,10 +9,10 @@ public interface UserImageService {
 
     public List<UserImage> getUserImages();
 
-    public Optional<UserImage> getUserImageByUserId(Integer userId);
+    public Optional<UserImage> getUserImageByUserId(Long userId);
 
     public String assignImageToUser(UserImage newUserImage);
 
-    public String deleteUserImage(Integer userId);
+    public String deleteUserImage(Long userId);
 
 }

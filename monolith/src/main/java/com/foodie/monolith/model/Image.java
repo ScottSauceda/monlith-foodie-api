@@ -30,5 +30,5 @@ public class Image {
     private String imgType;
 
     @Column(name = "users_id")
-    private int usersId;
+    private Long usersId;
 }

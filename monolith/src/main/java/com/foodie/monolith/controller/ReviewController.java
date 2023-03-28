@@ -1,5 +1,6 @@
 package com.foodie.monolith.controller;
 
+import com.foodie.monolith.exception.NotCurrentUserException;
 import com.foodie.monolith.exception.RestaurantNotFoundException;
 import com.foodie.monolith.exception.ReviewNotFoundException;
 import com.foodie.monolith.exception.UserNotFoundException;
@@ -8,14 +9,15 @@ import com.foodie.monolith.service.ReviewService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
 
-@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
-@RequestMapping("/review")
+@RequestMapping("/api/review")
 public class ReviewController {
 
     @Autowired
@@ -31,9 +33,10 @@ public class ReviewController {
     }
 
     @GetMapping(value = "/reviews/{userId}")
-    public ResponseEntity<List<Review>> getUserReviews(@PathVariable Integer userId) throws UserNotFoundException, ReviewNotFoundException {
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    public ResponseEntity<List<Review>> getUserReviews(@PathVariable Long userId, @CookieValue("foodie") String foodieCookie) throws UserNotFoundException, ReviewNotFoundException {
         try {
-            return ResponseEntity.status(HttpStatus.OK).body(reviewService.getUserReviews(userId));
+            return ResponseEntity.status(HttpStatus.OK).body(reviewService.getUserReviews(userId, foodieCookie));
         } catch(UserNotFoundException userNotFoundException){
             return new ResponseEntity(userNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
         } catch(ReviewNotFoundException reviewNotFoundException){
@@ -42,40 +45,52 @@ public class ReviewController {
     }
 
     @GetMapping(value = "/{reviewId}")
-    public ResponseEntity<Optional<Review>> getReviewById(@PathVariable Integer reviewId) throws ReviewNotFoundException {
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    public ResponseEntity<Optional<Review>> getReviewById(@PathVariable Integer reviewId, @CookieValue("foodie") String foodieCookie) throws NotCurrentUserException, RestaurantNotFoundException, ReviewNotFoundException, UserNotFoundException {
         try {
-            return ResponseEntity.status(HttpStatus.OK).body(reviewService.getReviewById(reviewId));
+            return ResponseEntity.status(HttpStatus.OK).body(reviewService.getReviewById(reviewId, foodieCookie));
+        } catch(NotCurrentUserException notCurrentUserException){
+            return new ResponseEntity(notCurrentUserException.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch(RestaurantNotFoundException restaurantNotFoundException){
+            return new ResponseEntity(restaurantNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
         } catch(ReviewNotFoundException reviewNotFoundException){
             return new ResponseEntity(reviewNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch(UserNotFoundException userNotFoundException){
+            return new ResponseEntity(userNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 
     @PostMapping(value = "/create/{restaurantId}")
-    public ResponseEntity<String> createReview(@RequestBody Review newReview, @PathVariable Integer restaurantId) throws UserNotFoundException, ReviewNotFoundException, RestaurantNotFoundException {
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    public ResponseEntity<String> createReview(@CookieValue("foodie") String foodieCookie, @PathVariable Integer restaurantId, @RequestBody Review newReview) throws NotCurrentUserException, RestaurantNotFoundException, ReviewNotFoundException, UserNotFoundException {
         try {
-            return ResponseEntity.status(HttpStatus.OK).body(reviewService.createReview(newReview, restaurantId));
-        }  catch (UserNotFoundException userNotFoundException) {
-            return new ResponseEntity(userNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
+            return ResponseEntity.status(HttpStatus.OK).body(reviewService.createReview(foodieCookie, restaurantId, newReview));
+        } catch(NotCurrentUserException notCurrentUserException){
+            return new ResponseEntity(notCurrentUserException.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch(RestaurantNotFoundException restaurantNotFoundException){
+            return new ResponseEntity(restaurantNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
         } catch(ReviewNotFoundException reviewNotFoundException){
             return new ResponseEntity(reviewNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
-        }   catch(RestaurantNotFoundException restaurantNotFoundException) {
-            return new ResponseEntity(restaurantNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch(UserNotFoundException userNotFoundException){
+            return new ResponseEntity(userNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 
     @PutMapping(value = "/update/{reviewId}")
-    public ResponseEntity<String> updateReview(@PathVariable Integer reviewId, @RequestBody Review updateReview) throws ReviewNotFoundException {
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    public ResponseEntity<String> updateReview(@PathVariable Integer reviewId, @RequestBody Review updateReview, @CookieValue("foodie") String foodieCookie) throws ReviewNotFoundException {
         try {
-            return ResponseEntity.status(HttpStatus.OK).body(reviewService.updateReview(reviewId, updateReview));
+            return ResponseEntity.status(HttpStatus.OK).body(reviewService.updateReview(reviewId, updateReview, foodieCookie));
         } catch(ReviewNotFoundException reviewNotFoundException){
             return new ResponseEntity(reviewNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 
     @DeleteMapping(value = "/delete/{reviewId}")
-    public ResponseEntity<String> deleteReview(@PathVariable Integer reviewId) throws ReviewNotFoundException {
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    public ResponseEntity<String> deleteReview(@PathVariable Integer reviewId, @CookieValue("foodie") String foodieCookie) throws ReviewNotFoundException {
         try {
-            return ResponseEntity.status(HttpStatus.OK).body(reviewService.deleteReview(reviewId));
+            return ResponseEntity.status(HttpStatus.OK).body(reviewService.deleteReview(reviewId, foodieCookie));
         } catch(ReviewNotFoundException reviewNotFoundException){
             return new ResponseEntity(reviewNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
         }

@@ -8,7 +8,7 @@ import java.util.Optional;
 public interface ImageService {
     public List<Image> getImages();
 
-    public List<Image> getUserImages(Integer userId);
+    public List<Image> getUserImages(Long userId);
 
     public Optional<Image> getImageById(Integer imageId);
 
@@ -16,15 +16,15 @@ public interface ImageService {
 
     public String deleteImage(Integer imageId);
 
-    public String createUserImage(Image newImage);
+    public String createUserImage(String foodieCookie, Image newImage);
 
-    public String deleteUserImage(Integer imageId);
+    public String deleteUserImage(String foodieCookie, Image deleteImage);
 
-    public String createRestaurantImage(Image newImage, Integer restaurantId);
+    public String createRestaurantImage(Image newImage, Integer restaurantId, String foodieCookie);
 
     //    public String updateMain(Integer reviewId, Review updateReview);
 
-    public String deleteRestaurantImage(Integer imageId);
+    public String deleteRestaurantImage(Integer imageId, String foodieCookie);
 
 
 }

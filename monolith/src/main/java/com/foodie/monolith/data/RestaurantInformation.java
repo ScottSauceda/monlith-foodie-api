@@ -19,7 +19,7 @@ public class RestaurantInformation {
     private String city;
     private String state;
     private Integer zipCode;
-    private Integer ownerId;
+    private Long ownerId;
     private Boolean isActive;
 
     // matches to owner_id

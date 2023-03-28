@@ -8,7 +8,7 @@ import java.io.Serializable;
 public class AssignedRoleId implements Serializable {
     private Integer rolesId;
 
-    private Integer usersId;
+    private Long usersId;
 
     public Integer getRolesId() {
         return rolesId;
@@ -18,11 +18,11 @@ public class AssignedRoleId implements Serializable {
         this.rolesId = rolesId;
     }
 
-    public Integer getUsersId() {
+    public Long getUsersId() {
         return usersId;
     }
 
-    public void setUsersId(Integer usersId) {
+    public void setUsersId(Long usersId) {
         this.usersId = usersId;
     }
 }

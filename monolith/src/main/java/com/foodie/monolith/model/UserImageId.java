@@ -8,7 +8,7 @@ import java.io.Serializable;
 public class UserImageId implements Serializable {
     private Integer imagesId;
 
-    private Integer usersId;
+    private Long usersId;
 
     public Integer getImagesId() {
         return imagesId;
@@ -18,11 +18,11 @@ public class UserImageId implements Serializable {
         this.imagesId = imagesId;
     }
 
-    public Integer getUsersId() {
+    public Long getUsersId() {
         return usersId;
     }
 
-    public void setUsersId(Integer usersId) {
+    public void setUsersId(Long usersId) {
         this.usersId = usersId;
     }
 }

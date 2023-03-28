@@ -21,5 +21,5 @@ public class AssignedRole {
 
     @Id
     @Column(name = "users_id")
-    private Integer usersId;
+    private Long usersId;
 }

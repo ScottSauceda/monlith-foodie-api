@@ -2,18 +2,21 @@ package com.foodie.monolith.controller;
 
 import com.foodie.monolith.data.NewUserInformation;
 import com.foodie.monolith.data.UserInformation;
-import com.foodie.monolith.exception.UserNotFoundException;
+import com.foodie.monolith.exception.*;
 import com.foodie.monolith.model.User;
+import com.foodie.monolith.payload.request.SignupRequest;
 import com.foodie.monolith.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-@CrossOrigin(origins = {"http://localhost:4200", "http://localhost:3000"})
+@CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/api/user")
 public class UserController {
 
     @Autowired
@@ -39,26 +42,50 @@ public class UserController {
     }
 
     @GetMapping(value = "/{userId}")
-    public ResponseEntity<UserInformation> getUserById(@PathVariable Integer userId) throws UserNotFoundException {
+    @PreAuthorize("hasRole('OWNER') or hasRole('USER') or hasRole('ADMIN')")
+    public ResponseEntity<UserInformation> getUserById(@CookieValue("foodie") String foodieCookie, @PathVariable Long userId) throws NotCurrentUserException, UserNotFoundException {
         try {
-            return ResponseEntity.status(HttpStatus.OK).body(userService.getUserById(userId));
+            return ResponseEntity.status(HttpStatus.OK).body(userService.getUserById(foodieCookie, userId));
+        } catch(NotCurrentUserException notCurrentUserException){
+            return new ResponseEntity(notCurrentUserException.getMessage(), HttpStatus.BAD_REQUEST);
         } catch(UserNotFoundException userNotFoundException){
             return new ResponseEntity(userNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 
-    @PostMapping(value = "/create")
-    public ResponseEntity<String> createUser(@RequestBody NewUserInformation newUserInformation) throws Exception {
+//    @PostMapping(value = "/create")
+//    public ResponseEntity<String> oldCreateUser(@RequestBody NewUserInformation newUserInformation) throws Exception {
+//        try {
+//            return ResponseEntity.status(HttpStatus.OK).body(userService.createUser(newUserInformation));
+//        } catch(Exception exception){
+//            return new ResponseEntity(exception.getMessage(), HttpStatus.BAD_REQUEST);
+//        }
+//    }
+
+
+    @PostMapping("/signup")
+    public ResponseEntity<String> registerUser(@Valid @RequestBody SignupRequest signUpRequest) throws EmailTakenException, PhoneTakenException, RoleNotFoundException, UsernameTakenException, UserNotFoundException, UserProfileNotFoundException {
         try {
-            return ResponseEntity.status(HttpStatus.OK).body(userService.createUser(newUserInformation));
-        } catch(Exception exception){
-            return new ResponseEntity(exception.getMessage(), HttpStatus.BAD_REQUEST);
+            return ResponseEntity.status(HttpStatus.OK).body(userService.registerUser(signUpRequest));
+        } catch(EmailTakenException emailTakenException){
+            return new ResponseEntity(emailTakenException.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch(PhoneTakenException phoneTakenException){
+            return new ResponseEntity(phoneTakenException.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch(RoleNotFoundException roleNotFoundException){
+            return new ResponseEntity(roleNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch(UsernameTakenException usernameTakenException){
+            return new ResponseEntity(usernameTakenException.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch(UserNotFoundException userNotFoundException){
+            return new ResponseEntity(userNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch(UserProfileNotFoundException userProfileNotFoundException){
+            return new ResponseEntity(userProfileNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 
 
+
     @PutMapping(value = "/update/{userId}")
-    public ResponseEntity<String> updateUser(@PathVariable Integer userId, @RequestBody User updateUser) throws UserNotFoundException {
+    public ResponseEntity<String> updateUser(@PathVariable Long userId, @RequestBody User updateUser) throws UserNotFoundException {
         try {
             return ResponseEntity.status(HttpStatus.OK).body(userService.updateUser(userId, updateUser));
         } catch(UserNotFoundException userNotFoundException){
@@ -67,17 +94,20 @@ public class UserController {
     }
 
     @PutMapping(value = "/setActive")
-    public ResponseEntity<String> setUserActive(@RequestBody UserInformation userInformation) throws UserNotFoundException {
+    @PreAuthorize("hasRole('OWNER') or hasRole('USER') or hasRole('ADMIN')")
+    public ResponseEntity<String> setUserActive(@CookieValue("foodie") String foodieCookie, @RequestBody UserInformation updateUser) throws NotCurrentUserException, UserNotFoundException {
         try {
             System.out.println("reached set user active");
-            return ResponseEntity.status(HttpStatus.OK).body(userService.setUserActive(userInformation));
+            return ResponseEntity.status(HttpStatus.OK).body(userService.setUserActive(foodieCookie, updateUser));
+        } catch(NotCurrentUserException notCurrentUserException){
+            return new ResponseEntity(notCurrentUserException.getMessage(), HttpStatus.BAD_REQUEST);
         } catch(UserNotFoundException userNotFoundException){
             return new ResponseEntity(userNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 
     @DeleteMapping(value = "/delete/{userId}")
-    public ResponseEntity<String> deleteUser(@PathVariable Integer userId) throws UserNotFoundException {
+    public ResponseEntity<String> deleteUser(@PathVariable Long userId) throws UserNotFoundException {
         try {
             return ResponseEntity.status(HttpStatus.OK).body(userService.deleteUser(userId));
         } catch(UserNotFoundException userNotFoundException){

@@ -7,6 +7,7 @@ import com.foodie.monolith.model.Restaurant;
 import com.foodie.monolith.model.User;
 import com.foodie.monolith.repository.RestaurantRepository;
 import com.foodie.monolith.repository.UserRepository;
+import com.foodie.monolith.security.jwt.JwtUtils;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,9 @@ public class RestaurantServiceImpl implements RestaurantService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    JwtUtils jwtUtils;
+
     @Transactional
     public List<RestaurantInformation> getRestaurants() throws RestaurantNotFoundException {
         List<RestaurantInformation> restaurants = new ArrayList<RestaurantInformation>();
@@ -39,8 +43,28 @@ public class RestaurantServiceImpl implements RestaurantService {
     }
 
     @Transactional
-    public List<RestaurantInformation> getUserRestaurants(Integer userId) throws UserNotFoundException, RestaurantNotFoundException {
+    public List<RestaurantInformation> getUserRestaurants(Long userId, String foodieCookie) throws UserNotFoundException, RestaurantNotFoundException {
         List<RestaurantInformation> restaurants = new ArrayList<RestaurantInformation>();
+
+        User dbUser = userRepository.getById(userId);
+
+        if(dbUser != null) {
+            System.out.println("username: ....");
+            System.out.println(dbUser.getUsername());
+
+            System.out.println("cookie userName: ....");
+            System.out.println(jwtUtils.getUserNameFromJwtToken(foodieCookie));
+
+            if (dbUser.getUsername().equals(jwtUtils.getUserNameFromJwtToken(foodieCookie))) {
+                System.out.println("userName from cookie matches user.userName");
+            } else {
+                System.out.println("cookie does not match user.userName");
+                throw new UserNotFoundException("cookie does not match user.userName");
+            }
+
+        }
+
+
         if(restaurantRepository.findAll().isEmpty()){
             throw new RestaurantNotFoundException("No Restaurants to return");
         } else if(restaurantRepository.findAllByOwnerUserId(userId).isEmpty()) {
@@ -65,8 +89,27 @@ public class RestaurantServiceImpl implements RestaurantService {
     }
 
     @Transactional
-    public String createRestaurant(RestaurantInformation newRestaurant) throws UserNotFoundException {
+    public String createRestaurant(RestaurantInformation newRestaurant, String foodieCookie) throws UserNotFoundException {
         Restaurant savedRestaurant = new Restaurant();
+
+        User dbUser = userRepository.getById(newRestaurant.getOwnerId());
+
+        if(dbUser != null) {
+            System.out.println("username: ....");
+            System.out.println(dbUser.getUsername());
+
+            System.out.println("cookie userName: ....");
+            System.out.println(jwtUtils.getUserNameFromJwtToken(foodieCookie));
+
+            if (dbUser.getUsername().equals(jwtUtils.getUserNameFromJwtToken(foodieCookie))) {
+                System.out.println("userName from cookie matches user.userName");
+            } else {
+                System.out.println("cookie does not match user.userName");
+                throw new UserNotFoundException("cookie does not match user.userName");
+            }
+
+        }
+
 
         System.out.println("newRestaurant");
         System.out.println(newRestaurant);
@@ -75,7 +118,7 @@ public class RestaurantServiceImpl implements RestaurantService {
             System.out.println("new Restaurant is null");
         }
 
-        int ownerId = newRestaurant.getOwnerId();
+        Long ownerId = newRestaurant.getOwnerId();
 
         System.out.println("newRestaurant ownerId");
         System.out.println(newRestaurant.getOwnerId());
@@ -107,9 +150,30 @@ public class RestaurantServiceImpl implements RestaurantService {
     }
 
     @Transactional
-    public String updateRestaurant(Integer restaurantId, RestaurantInformation updateRestaurant) throws RestaurantNotFoundException {
+    public String updateRestaurant(Integer restaurantId, RestaurantInformation updateRestaurant, String foodieCookie) throws RestaurantNotFoundException {
         Restaurant dbRestaurant = null;
-        int ownerId = updateRestaurant.getOwnerId();
+        Long ownerId = updateRestaurant.getOwnerId();
+
+        User dbUser = userRepository.getById(updateRestaurant.getOwnerId());
+
+        if(dbUser != null) {
+            System.out.println("username: ....");
+            System.out.println(dbUser.getUsername());
+
+            System.out.println("cookie userName: ....");
+            System.out.println(jwtUtils.getUserNameFromJwtToken(foodieCookie));
+
+            if (dbUser.getUsername().equals(jwtUtils.getUserNameFromJwtToken(foodieCookie))) {
+                System.out.println("userName from cookie matches user.userName");
+            } else {
+                System.out.println("cookie does not match user.userName");
+                throw new UserNotFoundException("cookie does not match user.userName");
+            }
+
+        } else {
+            System.out.println("User was null");
+        }
+
 
         if(restaurantRepository.findById(restaurantId).isEmpty()){
             throw new RestaurantNotFoundException("#02 Restaurant with Id: " + restaurantId + " does not exists. Please try again.");
@@ -133,9 +197,27 @@ public class RestaurantServiceImpl implements RestaurantService {
     }
 
     @Transactional
-    public String setRestaurantActive(RestaurantInformation restaurantInformation) throws RestaurantNotFoundException, UserNotFoundException {
+    public String setRestaurantActive(RestaurantInformation restaurantInformation, String foodieCookie) throws RestaurantNotFoundException, UserNotFoundException {
         Restaurant restaurantToUpdate = restaurantRepository.findById(restaurantInformation.getRestaurantId()).orElse(null);
         User user = userRepository.findById(restaurantInformation.getOwnerId()).orElse(null);
+
+
+        if(user != null) {
+            System.out.println("username: ....");
+            System.out.println(user.getUsername());
+
+            System.out.println("cookie userName: ....");
+            System.out.println(jwtUtils.getUserNameFromJwtToken(foodieCookie));
+
+            if (user.getUsername().equals(jwtUtils.getUserNameFromJwtToken(foodieCookie))) {
+                System.out.println("userName from cookie matches user.userName");
+            } else {
+                System.out.println("cookie does not match user.userName");
+                throw new UserNotFoundException("cookie does not match user.userName");
+            }
+
+        }
+
 
         if (restaurantRepository.findById(restaurantInformation.getRestaurantId()).isEmpty()) {
             throw new RestaurantNotFoundException("Something went wrong. Please try again");
@@ -155,8 +237,26 @@ public class RestaurantServiceImpl implements RestaurantService {
 
 
     @Transactional
-    public String deleteRestaurant(Integer restaurantId) throws RestaurantNotFoundException {
+    public String deleteRestaurant(Integer restaurantId, String foodieCookie) throws RestaurantNotFoundException {
         Restaurant dbRestaurant = restaurantRepository.findById(restaurantId).orElse(null);
+
+        User dbUser = userRepository.getById(dbRestaurant.getOwner().getUserId());
+
+        if(dbUser != null) {
+            System.out.println("username: ....");
+            System.out.println(dbUser.getUsername());
+
+            System.out.println("cookie userName: ....");
+            System.out.println(jwtUtils.getUserNameFromJwtToken(foodieCookie));
+
+            if (dbUser.getUsername().equals(jwtUtils.getUserNameFromJwtToken(foodieCookie))) {
+                System.out.println("userName from cookie matches user.userName");
+            } else {
+                System.out.println("cookie does not match user.userName");
+                throw new UserNotFoundException("cookie does not match user.userName");
+            }
+
+        }
 
         if(dbRestaurant == null){
             throw new RestaurantNotFoundException("Restaurant with Id: " + restaurantId + " does not exists. Please try again.");

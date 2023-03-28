@@ -1,8 +1,6 @@
 package com.foodie.monolith.service;
 
-import com.foodie.monolith.exception.RestaurantNotFoundException;
-import com.foodie.monolith.exception.ReviewNotFoundException;
-import com.foodie.monolith.exception.UserNotFoundException;
+import com.foodie.monolith.exception.*;
 import com.foodie.monolith.model.Restaurant;
 import com.foodie.monolith.model.RestaurantReview;
 import com.foodie.monolith.model.Review;
@@ -11,6 +9,7 @@ import com.foodie.monolith.repository.RestaurantRepository;
 import com.foodie.monolith.repository.RestaurantReviewRepository;
 import com.foodie.monolith.repository.ReviewRepository;
 import com.foodie.monolith.repository.UserRepository;
+import com.foodie.monolith.security.jwt.JwtUtils;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -33,6 +32,9 @@ public class ReviewServiceImpl implements  ReviewService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    JwtUtils jwtUtils;
+
     @Transactional
     public List<Review> getReviews() throws ReviewNotFoundException {
         List<Review> reviews = new ArrayList<Review>();
@@ -48,8 +50,27 @@ public class ReviewServiceImpl implements  ReviewService {
     }
 
     @Transactional
-    public List<Review> getUserReviews(Integer userId) throws UserNotFoundException, ReviewNotFoundException {
+    public List<Review> getUserReviews(Long userId, String foodieCookie) throws UserNotFoundException, ReviewNotFoundException {
         List<Review> reviews = new ArrayList<Review>();
+
+        User dbUser = userRepository.getById(userId);
+
+        if(dbUser != null) {
+            System.out.println("username: ....");
+            System.out.println(dbUser.getUsername());
+
+            System.out.println("cookie userName: ....");
+            System.out.println(jwtUtils.getUserNameFromJwtToken(foodieCookie));
+
+            if (dbUser.getUsername().equals(jwtUtils.getUserNameFromJwtToken(foodieCookie))) {
+                System.out.println("userName from cookie matches user.userName");
+            } else {
+                System.out.println("cookie does not match user.userName");
+                throw new UserNotFoundException("cookie does not match user.userName");
+            }
+
+        }
+
         if(reviewRepository.findAll().isEmpty()){
             throw new ReviewNotFoundException("No Reviews to return");
         } else if(reviewRepository.findAllByUserId(userId).isEmpty()) {
@@ -65,59 +86,104 @@ public class ReviewServiceImpl implements  ReviewService {
 
 
     @Transactional
-    public Optional<Review> getReviewById(Integer reviewId) throws ReviewNotFoundException {
+    public Optional<Review> getReviewById(Integer reviewId, String foodieCookie) throws ReviewNotFoundException {
         Optional<Review> review = null;
+
+
         if(reviewRepository.findById(reviewId).isEmpty()){
             throw new ReviewNotFoundException("Review with reviewId: " + reviewId + " does not exists. Please try again.");
         } else {
             review = reviewRepository.findById(reviewId);
+
+            User dbUser = userRepository.getById(review.get().getUserId());
+
+            if(dbUser != null) {
+                System.out.println("username: ....");
+                System.out.println(dbUser.getUsername());
+
+                System.out.println("cookie userName: ....");
+                System.out.println(jwtUtils.getUserNameFromJwtToken(foodieCookie));
+
+                if (dbUser.getUsername().equals(jwtUtils.getUserNameFromJwtToken(foodieCookie))) {
+                    System.out.println("userName from cookie matches user.userName");
+                } else {
+                    System.out.println("cookie does not match user.userName");
+                    throw new UserNotFoundException("cookie does not match user.userName");
+                }
+
+            }
         }
         return review;
     }
 
     @Transactional
-    public String createReview(Review newReview, Integer restaurantId) throws UserNotFoundException, ReviewNotFoundException, RestaurantNotFoundException {
+    public String createReview(String foodieCookie, Integer restaurantId, Review newReview) throws NotCurrentUserException, RestaurantNotFoundException, ReviewNotFoundException, UserNotFoundException {
+        // User: id, username, password, isActive, userRoles
+        // Review: reviewId, timeCreated, rating, reviewText, userId, userName
+        // RestaurantReview: reviewsId, restaurantsId
 
-        // find user from usersId in newReview
-        User newReviewUser = userRepository.findById(newReview.getUserId()).orElse(null);
+        // 1. Check if review user exists in our database
+        // 2. Check current cookie is valid for user.
+        // 3. Check if restaurant exists.
+        // 4. Capture userName from dbUser and add to newReview.
+        //      userName not sent with review(to avoid user mistyping userName),
+        // 5. Save Review to database if all checks pass.
+        // 6. Create RestaurantReview using the new review id.
+        // 7. Check if restaurantReview was saved to database and return ResponseEntity.OK if successful.
 
-        // Review
+
+        // Capturing newReview user to verify userName matches cookie userName
+        User dbUser = userRepository.findById(newReview.getUserId()).orElse(null);
+        // review is paired to restaurant via RestaurantReview  table
+        RestaurantReview newRestaurantReview = new RestaurantReview();
+
+        // Will be used further down to check if our review and restaurantReview save was successful.
         Review savedReview = new Review();
-
-
-        // RestaurantReview
         RestaurantReview savedRestaurantReview = new RestaurantReview();
 
-        RestaurantReview newRestaurantReview = new RestaurantReview();
-        newRestaurantReview.setRestaurantsId(restaurantId);
-
-
-        if(newReviewUser == null){
+        // Check user exists.
+        if(userRepository.findById(newReview.getUserId()).isEmpty())
             throw new UserNotFoundException("User not found. Could not create review.");
+
+        System.out.println("username: ....");
+        System.out.println(dbUser.getUsername());
+        System.out.println("cookie userName: ....");
+        System.out.println(jwtUtils.getUserNameFromJwtToken(foodieCookie));
+
+        // Check user has currently active jwtCookie
+        if(!dbUser.getUsername().equals(jwtUtils.getUserNameFromJwtToken(foodieCookie)) ) {
+            throw new NotCurrentUserException("User cookie not valid.");
         } else {
-            newReview.setUserName(newReviewUser.getUsername());
-            System.out.println("newReview userName");
-            System.out.println(newReview.getUserName());
+            System.out.println("User cookie was valid.");
         }
 
-        if(restaurantRepository.getById(restaurantId) == null){
+        if(restaurantRepository.findById(restaurantId).isEmpty())
             throw new RestaurantNotFoundException("Restaurant not found. Could not create review.");
-        }
 
-        System.out.println("newReview");
-        System.out.print(newReview);
+        // must capture userName before saving review to database
+        newReview.setUserName(dbUser.getUsername());
+        System.out.println("newReview userName");
+        System.out.println(newReview.getUserName());
 
+        // capture the newly created review
         savedReview = reviewRepository.saveAndFlush(newReview);
 
-        if(reviewRepository.findById(savedReview.getReviewId()) == null){
-            throw new ReviewNotFoundException("Review not created. Please try again.");
-        } else {
-            newRestaurantReview.setReviewsId(savedReview.getReviewId());
-            savedRestaurantReview = restaurantReviewRepository.saveAndFlush(newRestaurantReview);
-        }
+        // check saved review exists in database
+        if(reviewRepository.findById(savedReview.getReviewId()).isEmpty())
+            throw new ReviewNotFoundException("Review could not be saved.");
 
-        if(savedRestaurantReview.getReviewsId() == null) {
-            throw new ReviewNotFoundException("Review not assigned. Please try again.");
+        System.out.println("New Review created with Id: " + savedReview.getReviewId());
+
+        // populate newRestaurantReview for newly created review
+        // uses the new review id
+        newRestaurantReview.setRestaurantsId(restaurantId);
+        newRestaurantReview.setReviewsId(savedReview.getReviewId());
+        // capture newly created userImage
+        savedRestaurantReview = restaurantReviewRepository.saveAndFlush(newRestaurantReview);
+
+        // check saved userImage exists in database and return message to user
+        if(restaurantReviewRepository.findByReviewsId(savedRestaurantReview.getReviewsId()).isEmpty()) {
+            throw new ReviewNotFoundException("Review could not be assigned to restaurant.");
         } else {
             return "New Review created with Id: " + savedReview.getReviewId() + " assigned to restaurant: " + savedRestaurantReview.getRestaurantsId();
         }
@@ -125,12 +191,32 @@ public class ReviewServiceImpl implements  ReviewService {
     }
 
     @Transactional
-    public String updateReview(Integer reviewId, Review updateReview) throws ReviewNotFoundException {
+    public String updateReview(Integer reviewId, Review updateReview, String foodieCookie) throws ReviewNotFoundException {
         Review dbReview = reviewRepository.findById(reviewId).orElse(null);;
 
         if(dbReview == null){
             throw new ReviewNotFoundException("Review with Id: " + reviewId + "does not exists. Please try again.");
         } else {
+
+            User dbUser = userRepository.getById(dbReview.getUserId());
+
+            if(dbUser != null) {
+                System.out.println("username: ....");
+                System.out.println(dbUser.getUsername());
+
+                System.out.println("cookie userName: ....");
+                System.out.println(jwtUtils.getUserNameFromJwtToken(foodieCookie));
+
+                if (dbUser.getUsername().equals(jwtUtils.getUserNameFromJwtToken(foodieCookie))) {
+                    System.out.println("userName from cookie matches user.userName");
+                } else {
+                    System.out.println("cookie does not match user.userName");
+                    throw new UserNotFoundException("cookie does not match user.userName");
+                }
+
+            }
+
+
             dbReview.setRating(updateReview.getRating());
             dbReview.setReviewText(updateReview.getReviewText());
 
@@ -139,13 +225,32 @@ public class ReviewServiceImpl implements  ReviewService {
     }
 
     @Transactional
-    public String deleteReview(Integer reviewId) throws ReviewNotFoundException {
+    public String deleteReview(Integer reviewId, String foodieCookie) throws ReviewNotFoundException {
         Review dbReview = reviewRepository.findById(reviewId).orElse(null);
         RestaurantReview dbRestaurantReview = restaurantReviewRepository.findByReviewsId(reviewId).orElse(null);
 
         if(reviewRepository.findById(reviewId) == null){
             throw new ReviewNotFoundException("Review with Id: " + reviewId + " does not exists. Please try again.");
         } else {
+
+            User dbUser = userRepository.getById(dbReview.getUserId());
+
+            if(dbUser != null) {
+                System.out.println("username: ....");
+                System.out.println(dbUser.getUsername());
+
+                System.out.println("cookie userName: ....");
+                System.out.println(jwtUtils.getUserNameFromJwtToken(foodieCookie));
+
+                if (dbUser.getUsername().equals(jwtUtils.getUserNameFromJwtToken(foodieCookie))) {
+                    System.out.println("userName from cookie matches user.userName");
+                } else {
+                    System.out.println("cookie does not match user.userName");
+                    throw new UserNotFoundException("cookie does not match user.userName");
+                }
+
+            }
+
 
             if(restaurantReviewRepository.findByReviewsId(reviewId) == null){
                 throw new ReviewNotFoundException("RestaurantReview with Id: " + reviewId + " does not exists. Please try again.");

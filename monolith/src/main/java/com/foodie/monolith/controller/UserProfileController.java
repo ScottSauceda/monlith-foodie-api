@@ -1,20 +1,20 @@
 package com.foodie.monolith.controller;
 
-import com.foodie.monolith.exception.UserNotFoundException;
-import com.foodie.monolith.exception.UserProfileNotFoundException;
+import com.foodie.monolith.exception.*;
 import com.foodie.monolith.model.UserProfile;
 import com.foodie.monolith.service.UserProfileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
 
-@CrossOrigin(origins = {"http://localhost:4200", "http://localhost:3000"})
+@CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
-@RequestMapping("/profile")
+@RequestMapping("/api/profile")
 public class UserProfileController {
 
     @Autowired
@@ -29,9 +29,8 @@ public class UserProfileController {
         }
     }
 
-
     @GetMapping(value = "/{userId}")
-    public ResponseEntity<Optional<UserProfile>> getUserProfileByUserId(@PathVariable Integer userId) throws UserProfileNotFoundException {
+    public ResponseEntity<Optional<UserProfile>> getUserProfileByUserId(@PathVariable Long userId) throws UserProfileNotFoundException {
         try {
             return ResponseEntity.status(HttpStatus.OK).body(userProfileService.getUserProfileByUserId(userId));
         } catch(UserProfileNotFoundException userProfileNotFoundException){
@@ -48,17 +47,26 @@ public class UserProfileController {
         }
     }
 
-    @PutMapping(value = "/update/{userId}")
-    public ResponseEntity<String> updateUserProfile(@PathVariable Integer userId, @RequestBody UserProfile updateUserProfile) throws UserProfileNotFoundException {
+    @PutMapping(value = "/update")
+    @PreAuthorize("hasRole('OWNER') or hasRole('USER') or hasRole('ADMIN')")
+    public ResponseEntity<String> updateUserProfile(@CookieValue("foodie") String foodieCookie, @RequestBody UserProfile updateUserProfile) throws EmailTakenException, PhoneTakenException, NotCurrentUserException, UserNotFoundException, UserProfileNotFoundException {
         try {
-            return ResponseEntity.status(HttpStatus.OK).body(userProfileService.updateUserProfile(userId, updateUserProfile));
-        } catch(UserProfileNotFoundException userProfileNotFoundException){
+            return ResponseEntity.status(HttpStatus.OK).body(userProfileService.updateUserProfile(foodieCookie, updateUserProfile));
+        } catch(EmailTakenException emailTakenException){
+            return new ResponseEntity(emailTakenException.getMessage(), HttpStatus.BAD_REQUEST);
+        }catch(PhoneTakenException phoneTakenException){
+            return new ResponseEntity(phoneTakenException.getMessage(), HttpStatus.BAD_REQUEST);
+        }catch(NotCurrentUserException notCurrentUserException){
+            return new ResponseEntity(notCurrentUserException.getMessage(), HttpStatus.BAD_REQUEST);
+        }catch(UserNotFoundException userNotFoundException){
+            return new ResponseEntity(userNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
+        }catch(UserProfileNotFoundException userProfileNotFoundException){
             return new ResponseEntity(userProfileNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 
     @DeleteMapping(value = "/delete/{userId}")
-    public ResponseEntity<String> deleteUserProfile(@PathVariable Integer userId) throws UserProfileNotFoundException {
+    public ResponseEntity<String> deleteUserProfile(@PathVariable Long userId) throws UserProfileNotFoundException {
         try {
             return ResponseEntity.status(HttpStatus.OK).body(userProfileService.deleteUserProfile(userId));
         } catch(UserProfileNotFoundException userProfileNotFoundException){

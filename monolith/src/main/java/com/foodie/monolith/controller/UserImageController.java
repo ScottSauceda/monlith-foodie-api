@@ -29,7 +29,7 @@ public class UserImageController {
     }
 
     @GetMapping(value = "/{userId}")
-    public ResponseEntity<Optional<UserImage>> getUserImageByUserId(@PathVariable Integer userId) throws UserNotFoundException {
+    public ResponseEntity<Optional<UserImage>> getUserImageByUserId(@PathVariable Long userId) throws UserNotFoundException {
         try {
             return ResponseEntity.status(HttpStatus.OK).body(userImageService.getUserImageByUserId(userId));
         } catch (UserNotFoundException userNotFoundException) {
@@ -50,7 +50,7 @@ public class UserImageController {
 
 
     @DeleteMapping(value = "/delete/{userId}")
-    public ResponseEntity<String> deleteUserImage(@PathVariable Integer userId) throws UserNotFoundException {
+    public ResponseEntity<String> deleteUserImage(@PathVariable Long userId) throws UserNotFoundException {
         try {
             return ResponseEntity.status(HttpStatus.OK).body(userImageService.deleteUserImage(userId));
         } catch(UserNotFoundException userNotFoundException){

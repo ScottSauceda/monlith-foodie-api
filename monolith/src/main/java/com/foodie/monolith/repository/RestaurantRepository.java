@@ -13,5 +13,5 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Integer>
     // Useful only for testing as there can be multiple restaurants under the same name
     Optional<Restaurant> findTopByName(String name);
 
-    List<Restaurant> findAllByOwnerUserId(Integer userId);
+    List<Restaurant> findAllByOwnerUserId(Long userId);
 }

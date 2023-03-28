@@ -5,6 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
-public interface AssignedRoleRepository extends JpaRepository<AssignedRole, Integer> {
-    Optional<AssignedRole> findByUsersId(Integer userId);
+public interface AssignedRoleRepository extends JpaRepository<AssignedRole, Long> {
+    Optional<AssignedRole> findByUsersId(Long userId);
 }

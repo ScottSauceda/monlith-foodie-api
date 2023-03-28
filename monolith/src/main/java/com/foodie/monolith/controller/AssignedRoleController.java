@@ -29,7 +29,7 @@ public class AssignedRoleController {
     }
 
     @GetMapping(value = "/{userId}")
-    public ResponseEntity<Optional<AssignedRole>> getAssignedRoleByUserId(@PathVariable Integer userId) throws UserNotFoundException {
+    public ResponseEntity<Optional<AssignedRole>> getAssignedRoleByUserId(@PathVariable Long userId) throws UserNotFoundException {
         try {
             return ResponseEntity.status(HttpStatus.OK).body(assignedRoleService.getAssignedRoleByUserId(userId));
         } catch (UserNotFoundException userNotFoundException) {
@@ -50,7 +50,7 @@ public class AssignedRoleController {
 
 
     @DeleteMapping(value = "/delete/{userId}")
-    public ResponseEntity<String> deleteAssignedRole(@PathVariable Integer userId) throws UserNotFoundException {
+    public ResponseEntity<String> deleteAssignedRole(@PathVariable Long userId) throws UserNotFoundException {
         try {
             return ResponseEntity.status(HttpStatus.OK).body(assignedRoleService.deleteAssignedRole(userId));
         } catch(UserNotFoundException userNotFoundException){

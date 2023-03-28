@@ -33,7 +33,7 @@ public class UserImageServiceImpl implements UserImageService {
     }
 
     @Transactional
-    public Optional<UserImage> getUserImageByUserId(Integer userId) throws UserNotFoundException {
+    public Optional<UserImage> getUserImageByUserId(Long userId) throws UserNotFoundException {
         Optional<UserImage> userImage = null;
         if(userImageRepository.findByUsersId(userId).isEmpty()){
             throw new UserNotFoundException("UserImage with userId: " + userId + " does not exists. Please add an image for user");
@@ -60,7 +60,7 @@ public class UserImageServiceImpl implements UserImageService {
     }
 
     @Transactional
-    public String deleteUserImage(Integer userId) throws UserNotFoundException {
+    public String deleteUserImage(Long userId) throws UserNotFoundException {
         UserImage dbUserImage = userImageRepository.findByUsersId(userId).orElse(null);
 
         if(dbUserImage == null){
