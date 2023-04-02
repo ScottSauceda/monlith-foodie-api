@@ -1,9 +1,7 @@
 package com.foodie.monolith.controller;
 
-import com.foodie.monolith.exception.NotCurrentUserException;
-import com.foodie.monolith.exception.RestaurantNotFoundException;
-import com.foodie.monolith.exception.ReviewNotFoundException;
-import com.foodie.monolith.exception.UserNotFoundException;
+import com.foodie.monolith.exception.*;
+import com.foodie.monolith.model.Image;
 import com.foodie.monolith.model.Review;
 import com.foodie.monolith.service.ReviewService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,13 +32,15 @@ public class ReviewController {
 
     @GetMapping(value = "/reviews/{userId}")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-    public ResponseEntity<List<Review>> getUserReviews(@PathVariable Long userId, @CookieValue("foodie") String foodieCookie) throws UserNotFoundException, ReviewNotFoundException {
+    public ResponseEntity<List<Review>> getUserReviews(@CookieValue("foodie") String foodieCookie, @PathVariable Long userId) throws NotCurrentUserException, ReviewNotFoundException, UserNotFoundException {
         try {
-            return ResponseEntity.status(HttpStatus.OK).body(reviewService.getUserReviews(userId, foodieCookie));
-        } catch(UserNotFoundException userNotFoundException){
-            return new ResponseEntity(userNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
+            return ResponseEntity.status(HttpStatus.OK).body(reviewService.getUserReviews(foodieCookie, userId));
+        } catch(NotCurrentUserException notCurrentUserException){
+            return new ResponseEntity(notCurrentUserException.getMessage(), HttpStatus.BAD_REQUEST);
         } catch(ReviewNotFoundException reviewNotFoundException){
         return new ResponseEntity(reviewNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch(UserNotFoundException userNotFoundException){
+            return new ResponseEntity(userNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -76,23 +76,33 @@ public class ReviewController {
         }
     }
 
-    @PutMapping(value = "/update/{reviewId}")
+    @PutMapping(value = "/update")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-    public ResponseEntity<String> updateReview(@PathVariable Integer reviewId, @RequestBody Review updateReview, @CookieValue("foodie") String foodieCookie) throws ReviewNotFoundException {
+    public ResponseEntity<String> updateReview(@CookieValue("foodie") String foodieCookie, @RequestBody Review updateReview) throws NotCurrentUserException, ReviewNotFoundException, UserNotFoundException {
         try {
-            return ResponseEntity.status(HttpStatus.OK).body(reviewService.updateReview(reviewId, updateReview, foodieCookie));
+            return ResponseEntity.status(HttpStatus.OK).body(reviewService.updateReview(foodieCookie, updateReview));
+        } catch(NotCurrentUserException notCurrentUserException){
+            return new ResponseEntity(notCurrentUserException.getMessage(), HttpStatus.BAD_REQUEST);
         } catch(ReviewNotFoundException reviewNotFoundException){
             return new ResponseEntity(reviewNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch(UserNotFoundException userNotFoundException){
+            return new ResponseEntity(userNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 
-    @DeleteMapping(value = "/delete/{reviewId}")
+    @DeleteMapping(value = "/delete")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-    public ResponseEntity<String> deleteReview(@PathVariable Integer reviewId, @CookieValue("foodie") String foodieCookie) throws ReviewNotFoundException {
+    public ResponseEntity<String> deleteReview(@CookieValue("foodie") String foodieCookie, @RequestBody Review deleteReview) throws ImageNotFoundException, NotCurrentUserException, ReviewNotFoundException, UserNotFoundException {
         try {
-            return ResponseEntity.status(HttpStatus.OK).body(reviewService.deleteReview(reviewId, foodieCookie));
+            return ResponseEntity.status(HttpStatus.OK).body(reviewService.deleteReview(foodieCookie, deleteReview));
+        } catch(ImageNotFoundException imageNotFoundExceptionn){
+            return new ResponseEntity(imageNotFoundExceptionn.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch(NotCurrentUserException notCurrentUserException){
+            return new ResponseEntity(notCurrentUserException.getMessage(), HttpStatus.BAD_REQUEST);
         } catch(ReviewNotFoundException reviewNotFoundException){
             return new ResponseEntity(reviewNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch(UserNotFoundException userNotFoundException){
+            return new ResponseEntity(userNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 

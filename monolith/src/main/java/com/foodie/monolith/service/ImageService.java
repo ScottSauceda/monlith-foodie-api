@@ -11,7 +11,6 @@ public interface ImageService {
     public List<Image> getUserImages(Long userId);
 
     public Optional<Image> getImageById(Integer imageId);
-
     public String createImage(Image newImage);
 
     public String deleteImage(Integer imageId);
@@ -20,11 +19,11 @@ public interface ImageService {
 
     public String deleteUserImage(String foodieCookie, Image deleteImage);
 
-    public String createRestaurantImage(Image newImage, Integer restaurantId, String foodieCookie);
+    public String createRestaurantImage(String foodieCookie, Integer restaurantId, Image newImage);
 
     //    public String updateMain(Integer reviewId, Review updateReview);
 
-    public String deleteRestaurantImage(Integer imageId, String foodieCookie);
+    public String deleteRestaurantImage(String foodieCookie, Integer restaurantId, Image deleteImage);
 
 
 }

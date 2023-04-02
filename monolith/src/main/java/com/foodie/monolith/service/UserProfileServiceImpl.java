@@ -74,8 +74,8 @@ public class UserProfileServiceImpl implements UserProfileService {
         // 2. Check if user profile exists in database.
         // 3. Check current cookie is valid for user.
         // 4. Check if updateUserProfile email, or phone already exists in our database, since these should all be unique.
-        // 4. Save updated user profile tp database.
-        // 5. Return ResponseEntity.OK and success message.
+        // 5. Save updated user profile tp database.
+        // 6. Return ResponseEntity.OK and success message.
 
          System.out.println("update user profile");
          System.out.println(updateUserProfile.getUsersId());
@@ -85,7 +85,7 @@ public class UserProfileServiceImpl implements UserProfileService {
          System.out.println(updateUserProfile.getLastName());
 
         // Capturing user to verify userName matches cookie UserName
-        User dbUser = userRepository.getById(updateUserProfile.getUsersId());
+        User dbUser = userRepository.findById(updateUserProfile.getUsersId()).orElse(null);
         UserProfile dbUserProfile = userProfileRepository.findById(updateUserProfile.getUsersId()).orElse(null);
 
         System.out.println("db user profile");

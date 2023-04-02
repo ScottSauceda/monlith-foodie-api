@@ -58,7 +58,7 @@ public class UserServiceImpl implements UserService {
             throw new Exception("Something went wrong, please try again.");
         } else {
             for(UserProfile dbUser: userProfileRepository.findAll()){
-//                userInformation.add(getUserInformation(dbUser.getUsersId()));
+                userInformation.add(getUserInformation(dbUser.getUsersId()));
             }
         }
         return userInformation;
@@ -320,7 +320,6 @@ public class UserServiceImpl implements UserService {
             return "User has been updated successfully";
         }
     }
-
     @Transactional
     public String setUserActive(String foodieCookie, UserInformation updateUser) throws NotCurrentUserException, UserNotFoundException {
         // User: id, username, password, isActive, userRoles

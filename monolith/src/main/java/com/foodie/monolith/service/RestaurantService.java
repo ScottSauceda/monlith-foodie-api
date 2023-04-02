@@ -10,15 +10,16 @@ import java.util.Optional;
 public interface RestaurantService {
 
     public List<RestaurantInformation> getRestaurants();
-    List<RestaurantInformation> getUserRestaurants(Long userId, String foodieCookie);
+
+    List<RestaurantInformation> getUserRestaurants(String foodieCookie, Long userId);
 
     public RestaurantInformation getRestaurantById(Integer restaurantId);
 
-    public String createRestaurant(RestaurantInformation newRestaurant, String foodieCookie);
+    public String createRestaurant(String foodieCookie, RestaurantInformation newRestaurantInformation);
 
-    public String updateRestaurant(Integer restaurantId, RestaurantInformation updateRestaurant, String foodieCookie);
+    public String updateRestaurant(String foodieCookie, RestaurantInformation updateRestaurant);
 
-    public String setRestaurantActive(RestaurantInformation restaurantInformation, String foodieCookie);
+    public String setRestaurantActive(String foodieCookie, RestaurantInformation updateRestaurantInformation);
 
     public String deleteRestaurant(Integer restaurantId, String foodieCookie);
 

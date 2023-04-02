@@ -110,25 +110,35 @@ public class ImageController {
 
     @PostMapping(value = "/restaurant/create/{restaurantId}")
     @PreAuthorize("hasRole('OWNER') or hasRole('ADMIN')")
-    public ResponseEntity<String> createRestaurantImage(@RequestBody Image newImage, @PathVariable Integer restaurantId, @CookieValue("foodie") String foodieCookie) throws UserNotFoundException, ImageNotFoundException, RestaurantNotFoundException {
+    public ResponseEntity<String> createRestaurantImage(@CookieValue("foodie") String foodieCookie, @PathVariable Integer restaurantId, @RequestBody Image newImage) throws  ImageNotFoundException, ImageTypeException, NotCurrentUserException, RestaurantNotFoundException, UserNotFoundException {
         try {
-            return ResponseEntity.status(HttpStatus.OK).body(imageService.createRestaurantImage(newImage, restaurantId, foodieCookie));
-        } catch (UserNotFoundException userNotFoundException){
-            return new ResponseEntity(userNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
+            return ResponseEntity.status(HttpStatus.OK).body(imageService.createRestaurantImage(foodieCookie, restaurantId, newImage));
         } catch (ImageNotFoundException imageNotFoundException){
             return new ResponseEntity(imageNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
-        } catch (RestaurantNotFoundException restaurantNotFoundException){
+        }  catch (ImageTypeException imageTypeException){
+            return new ResponseEntity(imageTypeException.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (NotCurrentUserException notCurrentUserException){
+            return new ResponseEntity(notCurrentUserException.getMessage(), HttpStatus.BAD_REQUEST);
+        }  catch (RestaurantNotFoundException restaurantNotFoundException){
             return new ResponseEntity(restaurantNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
+        }  catch (UserNotFoundException userNotFoundException){
+            return new ResponseEntity(userNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 
-    @DeleteMapping(value = "/restaurant/delete/{imageId}")
+    @DeleteMapping(value = "/restaurant/delete/{restaurantId}")
     @PreAuthorize("hasRole('OWNER') or hasRole('ADMIN')")
-    public ResponseEntity<String> deleteRestaurantImage(@PathVariable Integer imageId, @CookieValue("foodie") String foodieCookie) throws ImageNotFoundException {
+    public ResponseEntity<String> deleteRestaurantImage(@CookieValue("foodie") String foodieCookie, @PathVariable Integer restaurantId, @RequestBody Image deleteImage) throws ImageNotFoundException, NotCurrentUserException, RestaurantNotFoundException, UserNotFoundException {
         try {
-            return ResponseEntity.status(HttpStatus.OK).body(imageService.deleteRestaurantImage(imageId, foodieCookie));
+            return ResponseEntity.status(HttpStatus.OK).body(imageService.deleteRestaurantImage(foodieCookie, restaurantId, deleteImage));
         } catch(ImageNotFoundException imageNotFoundException){
             return new ResponseEntity(imageNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch(NotCurrentUserException notCurrentUserException){
+            return new ResponseEntity(notCurrentUserException.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch(RestaurantNotFoundException restaurantNotFoundException){
+            return new ResponseEntity(restaurantNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch(UserNotFoundException userNotFoundException){
+            return new ResponseEntity(userNotFoundException.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 

@@ -1,7 +1,9 @@
 package com.foodie.monolith.service;
 
 import com.foodie.monolith.data.RestaurantInformation;
+import com.foodie.monolith.exception.NotCurrentUserException;
 import com.foodie.monolith.exception.RestaurantNotFoundException;
+import com.foodie.monolith.exception.ReviewNotFoundException;
 import com.foodie.monolith.exception.UserNotFoundException;
 import com.foodie.monolith.model.Restaurant;
 import com.foodie.monolith.model.User;
@@ -43,39 +45,53 @@ public class RestaurantServiceImpl implements RestaurantService {
     }
 
     @Transactional
-    public List<RestaurantInformation> getUserRestaurants(Long userId, String foodieCookie) throws UserNotFoundException, RestaurantNotFoundException {
+    public List<RestaurantInformation> getUserRestaurants(String foodieCookie, Long userId) throws  NotCurrentUserException, RestaurantNotFoundException, UserNotFoundException {
+        // User: id, username, password, isActive, userRoles
+        // Restaurant:
+        // RestaurantInformation:
+
+        // 1. Check if restaurant user exists in our database
+        // 2. Check current cookie is valid for user.
+        // 3. Check if restaurant exists in database.
+        // 4. Check if restaurant exists in database for user.
+        // 5. Return restaurants.
+
+        // Capturing newReview user to verify userName matches cookie userName
+        User dbUser = userRepository.findById(userId).orElse(null);
         List<RestaurantInformation> restaurants = new ArrayList<RestaurantInformation>();
 
-        User dbUser = userRepository.getById(userId);
+        // Restaurant list to capture restaurants from database.
+        List<Restaurant> dbRestaurants = new ArrayList<>();
 
-        if(dbUser != null) {
-            System.out.println("username: ....");
-            System.out.println(dbUser.getUsername());
+        // Check user exists.
+        if(userRepository.findById(userId).isEmpty())
+            throw new UserNotFoundException("User not found. Could not get reviews.");
 
-            System.out.println("cookie userName: ....");
-            System.out.println(jwtUtils.getUserNameFromJwtToken(foodieCookie));
+        System.out.println("username: ....");
+        System.out.println(dbUser.getUsername());
+        System.out.println("cookie userName: ....");
+        System.out.println(jwtUtils.getUserNameFromJwtToken(foodieCookie));
 
-            if (dbUser.getUsername().equals(jwtUtils.getUserNameFromJwtToken(foodieCookie))) {
-                System.out.println("userName from cookie matches user.userName");
-            } else {
-                System.out.println("cookie does not match user.userName");
-                throw new UserNotFoundException("cookie does not match user.userName");
-            }
-
-        }
-
-
-        if(restaurantRepository.findAll().isEmpty()){
-            throw new RestaurantNotFoundException("No Restaurants to return");
-        } else if(restaurantRepository.findAllByOwnerUserId(userId).isEmpty()) {
-            throw new UserNotFoundException("No Restaurants to return for that user");
+        // Check user has currently active jwtCookie
+        if(!dbUser.getUsername().equals(jwtUtils.getUserNameFromJwtToken(foodieCookie)) ) {
+            throw new NotCurrentUserException("User cookie not valid.");
         } else {
-            List<Restaurant> dbRestaurants = restaurantRepository.findAllByOwnerUserId(userId);
-            for(Restaurant restaurant: dbRestaurants){
-                restaurants.add(getRestaurantInformation(restaurant.getRestaurantId()));
-            }
-            return restaurants;
+            System.out.println("User cookie was valid.");
         }
+
+        // check if any restaurants exists in database
+        if(restaurantRepository.findAll().isEmpty())
+            throw new RestaurantNotFoundException("No Restaurants to return");
+
+        // check if any restaurants exists in database for given user
+        if(restaurantRepository.findAllByOwnerUserId(userId).isEmpty())
+            throw new RestaurantNotFoundException("No Restaurants for that user to return");
+
+        dbRestaurants = restaurantRepository.findAllByOwnerUserId(userId);
+        for(Restaurant restaurant: dbRestaurants){
+            restaurants.add(getRestaurantInformation(restaurant.getRestaurantId()));
+        }
+        return restaurants;
     }
 
     @Transactional
@@ -89,149 +105,146 @@ public class RestaurantServiceImpl implements RestaurantService {
     }
 
     @Transactional
-    public String createRestaurant(RestaurantInformation newRestaurant, String foodieCookie) throws UserNotFoundException {
+    public String createRestaurant(String foodieCookie, RestaurantInformation newRestaurantInformation) throws RestaurantNotFoundException, NotCurrentUserException, UserNotFoundException {
+        // User: id, username, password, isActive, userRoles
+        // Restaurant: restaurantId, owner, name, address, city, state, zipCode, isActive, reviews, images
+        // RestaurantInformation: restaurantId, name, address, city, state, zipCode, ownerId, isActive, restaurantReviews, restaurantImages
+
+        // 1. Check if restaurant user exists in our database
+        // 2. Check current cookie is valid for user.
+        // 3. Convert restaurantInformation to restaurant,
+        // 4. Check if restaurant was saved to database and return ResponseEntity.OK if successful.
+
+
+        // Capturing restaurant user to verify userName matches cookie userName
+        User dbUser = userRepository.getById(newRestaurantInformation.getOwnerId());
+        Restaurant newRestaurant = new Restaurant();
+
+        // Will be used further down to check if our restaurant save was successful.
         Restaurant savedRestaurant = new Restaurant();
 
-        User dbUser = userRepository.getById(newRestaurant.getOwnerId());
+        // Check user exists.
+        if(userRepository.findById(newRestaurantInformation.getOwnerId()).isEmpty())
+            throw new UserNotFoundException("User not found. Could not create restaurant.");
 
-        if(dbUser != null) {
-            System.out.println("username: ....");
-            System.out.println(dbUser.getUsername());
+        System.out.println("username: ....");
+        System.out.println(dbUser.getUsername());
+        System.out.println("cookie userName: ....");
+        System.out.println(jwtUtils.getUserNameFromJwtToken(foodieCookie));
 
-            System.out.println("cookie userName: ....");
-            System.out.println(jwtUtils.getUserNameFromJwtToken(foodieCookie));
-
-            if (dbUser.getUsername().equals(jwtUtils.getUserNameFromJwtToken(foodieCookie))) {
-                System.out.println("userName from cookie matches user.userName");
-            } else {
-                System.out.println("cookie does not match user.userName");
-                throw new UserNotFoundException("cookie does not match user.userName");
-            }
-
-        }
-
-
-        System.out.println("newRestaurant");
-        System.out.println(newRestaurant);
-
-        if(newRestaurant == null){
-            System.out.println("new Restaurant is null");
-        }
-
-        Long ownerId = newRestaurant.getOwnerId();
-
-        System.out.println("newRestaurant ownerId");
-        System.out.println(newRestaurant.getOwnerId());
-
-
-        if(userRepository.findById(ownerId).isEmpty()){
-            throw new UserNotFoundException("#01 Something went wrong. Please try again");
+        // Check user has currently active jwtCookie
+        if(!dbUser.getUsername().equals(jwtUtils.getUserNameFromJwtToken(foodieCookie)) ) {
+            throw new NotCurrentUserException("User cookie not valid.");
         } else {
-            savedRestaurant.setOwner(userRepository.findById(ownerId).orElse(null));
-            savedRestaurant.setName(newRestaurant.getName());
-            savedRestaurant.setAddress(newRestaurant.getAddress());
-            savedRestaurant.setCity(newRestaurant.getCity());
-            savedRestaurant.setState(newRestaurant.getState());
-            savedRestaurant.setZipCode(newRestaurant.getZipCode());
-            savedRestaurant.setActive(newRestaurant.getIsActive());
-            savedRestaurant = restaurantRepository.saveAndFlush(savedRestaurant);
-
-            if(savedRestaurant == null){
-                System.out.println("savedRestaurant is null");
-            }
-
-            if(savedRestaurant.getRestaurantId() != null){
-                return "New Restaurant created with Id: " + savedRestaurant.getRestaurantId();
-            } else {
-                return "Something went wrong. Please try again";
-            }
+            System.out.println("User cookie was valid.");
         }
 
-    }
+        newRestaurant.setOwner(dbUser);
+        newRestaurant.setName(newRestaurantInformation.getName());
+        newRestaurant.setAddress(newRestaurantInformation.getAddress());
+        newRestaurant.setCity(newRestaurantInformation.getCity());
+        newRestaurant.setState(newRestaurantInformation.getState());
+        newRestaurant.setZipCode(newRestaurantInformation.getZipCode());
+        newRestaurant.setActive(newRestaurantInformation.getIsActive());
 
-    @Transactional
-    public String updateRestaurant(Integer restaurantId, RestaurantInformation updateRestaurant, String foodieCookie) throws RestaurantNotFoundException {
-        Restaurant dbRestaurant = null;
-        Long ownerId = updateRestaurant.getOwnerId();
+        // capture the newly created restaurant
+        savedRestaurant = restaurantRepository.saveAndFlush(newRestaurant);
 
-        User dbUser = userRepository.getById(updateRestaurant.getOwnerId());
-
-        if(dbUser != null) {
-            System.out.println("username: ....");
-            System.out.println(dbUser.getUsername());
-
-            System.out.println("cookie userName: ....");
-            System.out.println(jwtUtils.getUserNameFromJwtToken(foodieCookie));
-
-            if (dbUser.getUsername().equals(jwtUtils.getUserNameFromJwtToken(foodieCookie))) {
-                System.out.println("userName from cookie matches user.userName");
-            } else {
-                System.out.println("cookie does not match user.userName");
-                throw new UserNotFoundException("cookie does not match user.userName");
-            }
-
+        // check saved restaurant exists in database and return message to user
+        if(restaurantRepository.findById(savedRestaurant.getRestaurantId()).isEmpty()) {
+            throw new RestaurantNotFoundException("Restaurant could not be saved.");
         } else {
-            System.out.println("User was null");
-        }
-
-
-        if(restaurantRepository.findById(restaurantId).isEmpty()){
-            throw new RestaurantNotFoundException("#02 Restaurant with Id: " + restaurantId + " does not exists. Please try again.");
-        } else {
-            if(userRepository.findById(ownerId).isEmpty()){
-                throw new UserNotFoundException("#01 Something went wrong. Please try again");
-            } else {
-                dbRestaurant = restaurantRepository.getById(restaurantId);
-                dbRestaurant.setOwner(userRepository.getById(ownerId));
-                dbRestaurant.setName(updateRestaurant.getName());
-                dbRestaurant.setAddress(updateRestaurant.getAddress());
-                dbRestaurant.setCity(updateRestaurant.getCity());
-                dbRestaurant.setState(updateRestaurant.getState());
-                dbRestaurant.setZipCode(updateRestaurant.getZipCode());
-                dbRestaurant.setActive(updateRestaurant.getIsActive());
-                restaurantRepository.save(dbRestaurant);
-
-                return "Restaurant has been updated successfully";
-            }
+            return "New Restaurant created with Id: " + savedRestaurant.getRestaurantId();
         }
     }
 
     @Transactional
-    public String setRestaurantActive(RestaurantInformation restaurantInformation, String foodieCookie) throws RestaurantNotFoundException, UserNotFoundException {
-        Restaurant restaurantToUpdate = restaurantRepository.findById(restaurantInformation.getRestaurantId()).orElse(null);
-        User user = userRepository.findById(restaurantInformation.getOwnerId()).orElse(null);
+    public String updateRestaurant(String foodieCookie, RestaurantInformation updateRestaurantInformation) throws NotCurrentUserException, RestaurantNotFoundException, UserNotFoundException {
+        // User: id, username, password, isActive, userRoles
+        // Restaurant: restaurantId, owner, name, address, city, state, zipCode, isActive, reviews, images
+        // RestaurantInformation: restaurantId, name, address, city, state, zipCode, ownerId, isActive, restaurantReviews, restaurantImages
 
+        // 1. Check if user exists in database.
+        // 2. Check if user profile exists in database.
+        // 3. Check current cookie is valid for user.
+        // 4. Save updated user profile tp database.
+        // 5. Return ResponseEntity.OK and success messaage.
 
-        if(user != null) {
-            System.out.println("username: ....");
-            System.out.println(user.getUsername());
+        // Capturing user to verify userName matches cookie UserName
+        User dbUser = userRepository.findById(updateRestaurantInformation.getOwnerId()).orElse(null);
+        Restaurant dbRestaurant = new Restaurant();
 
-            System.out.println("cookie userName: ....");
-            System.out.println(jwtUtils.getUserNameFromJwtToken(foodieCookie));
+        // Check user exists.
+        if(userRepository.findById(updateRestaurantInformation.getOwnerId()).isEmpty())
+            throw new UserNotFoundException("User not found. Could not create review.");
 
-            if (user.getUsername().equals(jwtUtils.getUserNameFromJwtToken(foodieCookie))) {
-                System.out.println("userName from cookie matches user.userName");
-            } else {
-                System.out.println("cookie does not match user.userName");
-                throw new UserNotFoundException("cookie does not match user.userName");
-            }
+        System.out.println("username: ....");
+        System.out.println(dbUser.getUsername());
+        System.out.println("cookie userName: ....");
+        System.out.println(jwtUtils.getUserNameFromJwtToken(foodieCookie));
 
-        }
-
-
-        if (restaurantRepository.findById(restaurantInformation.getRestaurantId()).isEmpty()) {
-            throw new RestaurantNotFoundException("Something went wrong. Please try again");
+        // Check user has currently active jwtCookie
+        if(!dbUser.getUsername().equals(jwtUtils.getUserNameFromJwtToken(foodieCookie)) ) {
+            throw new NotCurrentUserException("User cookie not valid.");
         } else {
-            if (userRepository.findById(restaurantInformation.getOwnerId()).isEmpty()) {
-                throw new UserNotFoundException("Something went wrong. Please try again");
-            } else {
-                Restaurant updateRestaurant = restaurantRepository.getById(restaurantInformation.getRestaurantId());
-                updateRestaurant.setOwner(user);
-                updateRestaurant.setActive(restaurantInformation.getIsActive());
-                restaurantRepository.save(updateRestaurant);
-                return "Restaurant active status has been updated successfully";
-            }
+            System.out.println("User cookie was valid.");
         }
+
+        // Check restaurant exists.
+        if(restaurantRepository.findById(updateRestaurantInformation.getRestaurantId()).isEmpty())
+            throw new RestaurantNotFoundException("Restaurant not found. Could not update restaurant.");
+
+        dbRestaurant = restaurantRepository.getById(updateRestaurantInformation.getRestaurantId());
+        dbRestaurant.setOwner(userRepository.getById(updateRestaurantInformation.getOwnerId()));
+        dbRestaurant.setName(updateRestaurantInformation.getName());
+        dbRestaurant.setAddress(updateRestaurantInformation.getAddress());
+        dbRestaurant.setCity(updateRestaurantInformation.getCity());
+        dbRestaurant.setState(updateRestaurantInformation.getState());
+        dbRestaurant.setZipCode(updateRestaurantInformation.getZipCode());
+
+        restaurantRepository.save(dbRestaurant);
+        return "Restaurant has been updated successfully";
+
+
+    }
+
+    @Transactional
+    public String setRestaurantActive(String foodieCookie, RestaurantInformation updateRestaurantInformation) throws NotCurrentUserException, RestaurantNotFoundException, UserNotFoundException{
+        // User: id, username, password, isActive, userRoles
+        // Restaurant: restaurantId, owner, name, address, city, state, zipCode, isActive, reviews, images
+        // RestaurantInformation: restaurantId, name, address, city, state, zipCode, ownerId, isActive, restaurantReviews, restaurantImages
+
+        // 1. Check if user exists in database.
+        // 2. Check current cookie is valid for user.
+        // 3. Check if restaurant exists in database.
+        // 4. Save updated user active status to database.
+        // 5. Return ResponseEntity.OK and success message.
+
+        // Capturing user to verify userName matches cookie UserName and update user
+        User dbUser = userRepository.findById(updateRestaurantInformation.getOwnerId()).orElse(null);
+        Restaurant dbRestaurant = new Restaurant();
+
+        // Check user exists.
+        if(userRepository.findById(updateRestaurantInformation.getOwnerId()).isEmpty())
+            throw new UserNotFoundException("User with Id: " +  updateRestaurantInformation.getOwnerId() + " does not exists.");
+
+        // Check user has currently active jwtCookie
+        if(!dbUser.getUsername().equals(jwtUtils.getUserNameFromJwtToken(foodieCookie)) ) {
+            throw new NotCurrentUserException("User cookie not valid.");
+        } else {
+            System.out.println("User cookie was valid.");
+        }
+
+        // Check user exists.
+        if (restaurantRepository.findById(updateRestaurantInformation.getRestaurantId()).isEmpty())
+            throw new RestaurantNotFoundException("Restaurant not found. Could not update restaurant. ");
+
+        dbRestaurant = restaurantRepository.getById(updateRestaurantInformation.getRestaurantId());
+        dbRestaurant.setOwner(userRepository.getById(updateRestaurantInformation.getOwnerId()));
+        dbRestaurant.setActive(updateRestaurantInformation.getIsActive());
+
+        restaurantRepository.save(dbRestaurant);
+        return "Restaurant active status has been updated successfully";
     }
 
 

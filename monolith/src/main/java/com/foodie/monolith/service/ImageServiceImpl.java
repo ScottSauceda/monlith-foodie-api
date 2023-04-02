@@ -171,7 +171,6 @@ public class ImageServiceImpl implements ImageService {
         if(!newImage.getImgType().equals("profile"))
             throw new ImageTypeException("Image type not valid.");
 
-
         // capture the newly created image
         savedImage = imageRepository.saveAndFlush(newImage);
 
@@ -202,10 +201,11 @@ public class ImageServiceImpl implements ImageService {
         // Image: imgId, imgName, imgSrc, imgType, usersId
         // UserImage: imagesId, usersId
 
-        // 1. Check if user exists in database.
+        // 1. Check if deleteImage user exists in database.
         // 2. Check current cookie is valid for user.
-        // 3. Save updated user active status to database.
-        // 4. Return ResponseEntity.OK and success message.
+        // 3. Delete UserImage from userImage table in database.
+        // 4. Delete Image from image table in database.
+        // 5. Return ResponseEntity.OK and success message.
 
         System.out.println("deleteImage");
         System.out.println("deleteImage imgId");
@@ -216,16 +216,8 @@ public class ImageServiceImpl implements ImageService {
         Image dbImage = imageRepository.findById(deleteImage.getImgId()).orElse(null);
         UserImage dbUserImage = userImageRepository.findByImagesId(deleteImage.getImgId()).orElse(null);
 
-        // Capturing user to verify userName matches cookie UserName and update user
+        // Capturing user to verify userName matches cookie UserName and deleteImage user
         User dbUser = userRepository.getById(deleteImage.getUsersId());
-
-        // Check if image exists.
-        if(imageRepository.findById(deleteImage.getImgId()).isEmpty())
-            throw new ImageNotFoundException("Image with Id: " + deleteImage.getImgId()+ " does not exists.");
-
-        // Check if userImage exists.
-        if(userImageRepository.findByImagesId(deleteImage.getImgId()).isEmpty())
-            throw new ImageNotFoundException("UserImage with imgId: " + deleteImage.getImgId() + " does not exists.");
 
         // Check user exists.
         if(userRepository.findById(dbUser.getUserId()).isEmpty())
@@ -238,6 +230,14 @@ public class ImageServiceImpl implements ImageService {
             System.out.println("User cookie was valid.");
         }
 
+        // Check if image exists.
+        if(imageRepository.findById(deleteImage.getImgId()).isEmpty())
+            throw new ImageNotFoundException("Image with Id: " + deleteImage.getImgId()+ " does not exists.");
+
+        // Check if userImage exists.
+        if(userImageRepository.findByImagesId(deleteImage.getImgId()).isEmpty())
+            throw new ImageNotFoundException("UserImage with imgId: " + deleteImage.getImgId() + " does not exists.");
+
 
         // image must be deleted from userImage table first, then deleted from image table
         userImageRepository.delete(dbUserImage);
@@ -246,87 +246,137 @@ public class ImageServiceImpl implements ImageService {
         return "Image has been deleted successfully";
     }
 
-
-    // creates RestaurantImage
-    // 1. create image on image table
-    // 2. grab id from new image and insert into RestaurantImage table
     @Transactional
-    public String createRestaurantImage(Image newImage, Integer restaurantId, String foodieCookie) throws UserNotFoundException, ImageNotFoundException, RestaurantNotFoundException {
+    public String createRestaurantImage(String foodieCookie, Integer restaurantId, Image newImage) throws ImageNotFoundException, ImageTypeException, NotCurrentUserException, RestaurantNotFoundException, UserNotFoundException {
+        // User: id, username, password, isActive, userRoles
+        // Image: imgId, imgName, imgSrc, imgType, usersId
+        // RestaurantImage: imagesId, restaurantsId, isMain
 
-        System.out.println("newImage submitted");
-        System.out.println(newImage.getUsersId());
-        System.out.println(newImage.getImgName());
-        System.out.println(newImage.getImgType());
-        System.out.println(newImage.getImgSrc());
+        // 1. Check if newImage user exists in our database
+        // 2. Check current cookie is valid for user.
+        // 3. Check restaurant exists in our databse.
+        // 4. Check image is of type "restaurant".
+        // 5. Save Image to database if all checks pass.
+        // 6. Create RestaurantImage using the new image id.
+        // 7. Check if restaurantImage was saved to database and return ResponseEntity.OK if successful.
 
+
+//        System.out.println("newImage submitted");
+//        System.out.println(newImage.getUsersId());
+//        System.out.println(newImage.getImgName());
+//        System.out.println(newImage.getImgType());
+//        System.out.println(newImage.getImgSrc());
+
+        // Capturing newImage user to verify userName matches cookie userName
         User dbUser = userRepository.findById(newImage.getUsersId()).orElse(null);
+        // if uploading restaurant pic, save to RestaurantImage table
+        RestaurantImage newRestaurantImage = new RestaurantImage();
 
-        if(!jwtUtils.cookieUserNameMatchesRequestUser(foodieCookie, dbUser.getUsername())){
-            throw new UserNotFoundException("cookie does not match user.userName");
-        }
+        // Will be used further down to check if our image and restaurantImage save was successful.
+        Image savedImage = new Image();
+        RestaurantImage savedRestaurantImage = new RestaurantImage();
 
-        if(userRepository.findById(newImage.getUsersId()) == null){
+        // Check user exists.
+        if(userRepository.findById(newImage.getUsersId()).isEmpty())
             throw new UserNotFoundException("User not found. Could not create image.");
-        }
 
-        if(restaurantRepository.findById(restaurantId) == null){
-            throw new RestaurantNotFoundException("Restaurant not found. Could not RestaurantImage. Please try again.");
-        }
+        System.out.println("username: ....");
+        System.out.println(dbUser.getUsername());
+        System.out.println("cookie userName: ....");
+        System.out.println(jwtUtils.getUserNameFromJwtToken(foodieCookie));
 
-        Image savedImage = imageRepository.saveAndFlush(newImage);
-
-
-        if(imageRepository.findById(newImage.getImgId()) == null){
-            throw new ImageNotFoundException("Image not created. Please try again.");
-        }
-
-        if(newImage.getImgType().equals("restaurant")){
-            // if uploading profile pic, save to UserImage table
-            RestaurantImage savedRestaurantImage = new RestaurantImage();
-
-            RestaurantImage newRestaurantImage = new RestaurantImage();
-            newRestaurantImage.setRestaurantsId(restaurantId);
-            newRestaurantImage.setImagesId(savedImage.getImgId());
-            newRestaurantImage.setMain(false);
-
-            savedRestaurantImage = restaurantImageRepository.saveAndFlush(newRestaurantImage);
-
-            if(savedRestaurantImage.getImagesId() == null){
-                throw new ImageNotFoundException("Image not assigned to user. Please try again");
-            } else {
-                return "New Image create with Id: " + savedRestaurantImage.getImagesId() + " for restaurant " + savedRestaurantImage.getRestaurantsId();
-            }
+        // Check user has currently active jwtCookie
+        if(!dbUser.getUsername().equals(jwtUtils.getUserNameFromJwtToken(foodieCookie)) ) {
+            throw new NotCurrentUserException("User cookie not valid.");
         } else {
-            return "Type given was not restaurant. Please try again";
+            System.out.println("User cookie was valid.");
+        }
+
+        if(restaurantRepository.findById(restaurantId).isEmpty())
+            throw new RestaurantNotFoundException("Restaurant not found.");
+
+        // Check image type is "restaurant"
+        if(!newImage.getImgType().equals("restaurant"))
+            throw new ImageTypeException("Image type not valid.");
+
+        // capture the newly created image
+        savedImage = imageRepository.saveAndFlush(newImage);
+
+        // check saved image exists in database
+        if(imageRepository.findById(newImage.getImgId()).isEmpty())
+            throw new ImageNotFoundException("Image could not be saved.");
+
+        System.out.println("New Image created with Id: " + savedImage.getImgId());
+
+        // populate newRestaurantImage for newly created image
+        // uses the new image id
+        newRestaurantImage.setRestaurantsId(restaurantId);
+        newRestaurantImage.setImagesId(savedImage.getImgId());
+        // false by default, user will be able to set isMain after successful upload
+        newRestaurantImage.setMain(false);
+        // capture newly created restaurantImage
+        savedRestaurantImage = restaurantImageRepository.saveAndFlush(newRestaurantImage);
+
+        // check saved restaurantImage exists in database and return message to user
+        if(restaurantImageRepository.findByImagesId(savedRestaurantImage.getImagesId()).isEmpty()){
+            throw new ImageNotFoundException("Image not be assigned to restaurant.");
+        } else {
+            return "New Image create with Id: " + savedRestaurantImage.getImagesId() + " for restaurant " + savedRestaurantImage.getRestaurantsId();
         }
     }
 
-    // delete RestaurantImage
-    // 1. delete from RestaurantImage table
-    // 2. delete from Image table
-
     @Transactional
-    public String deleteRestaurantImage(Integer imageId, String foodieCookie) throws ImageNotFoundException {
-        Image dbImage = imageRepository.findById(imageId).orElse(null);
-        RestaurantImage dbRestaurantImage = restaurantImageRepository.findByImagesId(imageId).orElse(null);
+    public String deleteRestaurantImage(String foodieCookie, Integer restaurantId, Image deleteImage) throws ImageNotFoundException, NotCurrentUserException, RestaurantNotFoundException, UserNotFoundException {
+        // User: id, username, password, isActive, userRoles
+        // Image: imgId, imgName, imgSrc, imgType, usersId
+        // RestaurantImage: imagesId, restaurantsId, isMain
 
-        User dbUser = userRepository.findById(dbImage.getUsersId()).orElse(null);
+        // 1. Check if deleteImage user exists in database.
+        // 2. Check current cookie is valid for user.
+        // 3. Check restaurant exists in database.
+        // 3. Delete UserImage from userImage table in database.
+        // 4. Delete Image from image table in database.
+        // 5. Return ResponseEntity.OK and success message.
 
-        if(!jwtUtils.cookieUserNameMatchesRequestUser(foodieCookie, dbUser.getUsername())){
-            throw new UserNotFoundException("cookie does not match user.userName");
-        }
+        System.out.println("deleteImage");
+        System.out.println("deleteImage imgId");
+        System.out.println(deleteImage.getImgId());
+        System.out.println("deleteImage userId");
+        System.out.println(deleteImage.getUsersId());
 
-        if(dbRestaurantImage == null){
-            throw new ImageNotFoundException("RestaurantImage with Id: " + imageId + "does not exists. Please try again.");
+        Image dbImage = imageRepository.findById(deleteImage.getImgId()).orElse(null);
+        RestaurantImage dbRestaurantImage = restaurantImageRepository.findByImagesId(deleteImage.getImgId()).orElse(null);
+
+        // Capturing user to verify userName matches cookie UserName and deleteImage user
+        User dbUser = userRepository.getById(deleteImage.getUsersId());
+
+        // Check user exists.
+        if(userRepository.findById(dbUser.getUserId()).isEmpty())
+            throw new UserNotFoundException("User with Id: " +  deleteImage.getUsersId() + " does not exists.");
+
+        // Check user has currently active jwtCookie
+        if(!dbUser.getUsername().equals(jwtUtils.getUserNameFromJwtToken(foodieCookie)) ) {
+            throw new NotCurrentUserException("User cookie not valid.");
         } else {
-            if(dbImage == null){
-                throw new ImageNotFoundException("Image with Id: " + imageId + " does not exists. Please try again.");
-            } else {
-                restaurantImageRepository.delete(dbRestaurantImage);
-                imageRepository.delete(dbImage);
-                return "Image has been deleted successfully";
-            }
+            System.out.println("User cookie was valid.");
         }
+
+        // Check restaurant exists.
+        if(restaurantRepository.findById(restaurantId).isEmpty())
+            throw new RestaurantNotFoundException("Restaurant with Id: " +  restaurantId + " does not exists.");
+
+        // Check if image exists.
+        if(imageRepository.findById(deleteImage.getImgId()).isEmpty())
+            throw new ImageNotFoundException("Image with Id: " + deleteImage.getImgId()+ " does not exists.");
+
+        // Check if restaurantImage exists.
+        if(restaurantImageRepository.findByImagesId(deleteImage.getImgId()).isEmpty())
+            throw new ImageNotFoundException("RestaurantImage with imgId: " + deleteImage.getImgId() + " does not exists.");
+
+        // image must be deleted from restaurantImage table first, then deleted from image table
+        restaurantImageRepository.delete(dbRestaurantImage);
+        imageRepository.delete(dbImage);
+        return "Image has been deleted successfully";
 
     }
 
