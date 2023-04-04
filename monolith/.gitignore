@@ -34,3 +34,7 @@ build/
 
 /src/main/resources/application-local.properties
 .DS_Store
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
